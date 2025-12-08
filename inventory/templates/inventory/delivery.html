@@ -1,0 +1,259 @@
+{% extends "base_module.html" %}
+
+{% block content %}
+<style>
+/* Remove card hover animations */
+.card {
+    transition: none !important;
+    transform: none !important;
+}
+
+.card:hover {
+    transition: none !important;
+    transform: none !important;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+}
+</style>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Page Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="mb-0">Material Delivery</h2>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item">
+                            <i class="fas fa-boxes me-1"></i>Inventory
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">Delivery</li>
+                    </ol>
+                </nav>
+            </div>
+
+            <!-- Delivery Form -->
+            <form method="POST" id="deliveryForm">
+                {% csrf_token %}
+                
+                <!-- Delivery Information Card -->
+                <div class="card mb-3">
+                    <div class="card-header bg-white">
+                        <h5 class="card-title mb-0 text-black">
+                            <i class="fas fa-truck me-2"></i>Delivery Information
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="deliveryNumber" class="form-label">Delivery Number</label>
+                                <input type="text" class="form-control" id="deliveryNumber" name="delivery_number" readonly value="DN-{{ "now"|date:"Ymd" }}-XXX">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="deliveryDate" class="form-label">Delivery Date <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="deliveryDate" name="delivery_date" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="sourceWarehouse" class="form-label">Source Warehouse <span class="text-danger">*</span></label>
+                                <select class="form-select" id="sourceWarehouse" name="source_warehouse" required>
+                                    <option value="">Select source warehouse...</option>
+                                    <option value="Main Warehouse - Quezon City">Main Warehouse - Quezon City</option>
+                                    <option value="Central Depot - Makati">Central Depot - Makati</option>
+                                    <option value="Storage Hub - Taguig">Storage Hub - Taguig</option>
+                                    <option value="Regional Center - Pasig">Regional Center - Pasig</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="destinationWarehouse" class="form-label">Destination Warehouse <span class="text-danger">*</span></label>
+                                <select class="form-select" id="destinationWarehouse" name="destination_warehouse" required>
+                                    <option value="">Select destination warehouse...</option>
+                                    <option value="Project Site - Metro Tower">Project Site - Metro Tower</option>
+                                    <option value="Project Site - Highway Expansion">Project Site - Highway Expansion</option>
+                                    <option value="Project Site - Residential Complex">Project Site - Residential Complex</option>
+                                    <option value="Project Site - Bridge Rehabilitation">Project Site - Bridge Rehabilitation</option>
+                                    <option value="Satellite Storage - Mandaluyong">Satellite Storage - Mandaluyong</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="driverName" class="form-label">Driver Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="driverName" name="driver_name" placeholder="Enter driver name" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="vehicleNumber" class="form-label">Vehicle/Plate Number <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="vehicleNumber" name="vehicle_number" placeholder="e.g., ABC-1234" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12 mb-3">
+                                <label for="remarks" class="form-label">Remarks</label>
+                                <textarea class="form-control" id="remarks" name="remarks" rows="2" placeholder="Additional notes or instructions..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Materials to Deliver Card -->
+                <div class="card mb-3">
+                    <div class="card-header bg-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0 text-black">
+                                <i class="fas fa-boxes me-2"></i>Materials to Deliver
+                            </h5>
+                            <button type="button" class="btn btn-primary btn-sm" id="addMaterialBtn">
+                                <i class="fas fa-plus me-1"></i>Add Material
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-bordered mb-0" id="materialsTable">
+                                <thead style="background-color: #ffffff !important;">
+                                    <tr>
+                                        <th style="background-color: #ffffff !important; color: #000000 !important; width: 5%;">#</th>
+                                        <th style="background-color: #ffffff !important; color: #000000 !important; width: 30%;">Material Name <span class="text-danger">*</span></th>
+                                        <th style="background-color: #ffffff !important; color: #000000 !important; width: 15%;">Unit</th>
+                                        <th style="background-color: #ffffff !important; color: #000000 !important; width: 15%;">Quantity <span class="text-danger">*</span></th>
+                                        <th style="background-color: #ffffff !important; color: #000000 !important; width: 25%;">Batch/Serial Number</th>
+                                        <th style="background-color: #ffffff !important; color: #000000 !important; width: 10%;" class="text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="materialsTableBody">
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted py-4">
+                                            <i class="fas fa-inbox fa-2x mb-2"></i>
+                                            <p class="mb-0">No materials added yet. Click "Add Material" to start.</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="button" class="btn btn-secondary" onclick="window.location.href='{% url 'inventory:delivery' %}'">
+                                <i class="fas fa-times me-1"></i>Cancel
+                            </button>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-check me-1"></i>Submit Delivery
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+let materialCounter = 0;
+
+// Add material row
+document.getElementById('addMaterialBtn').addEventListener('click', function() {
+    materialCounter++;
+    const tbody = document.getElementById('materialsTableBody');
+    
+    // Remove empty state if exists
+    if (tbody.querySelector('td[colspan="6"]')) {
+        tbody.innerHTML = '';
+    }
+    
+    const row = document.createElement('tr');
+    row.id = `material-row-${materialCounter}`;
+    row.innerHTML = `
+        <td class="text-center">${materialCounter}</td>
+        <td>
+            <input type="text" class="form-control form-control-sm" name="material_name[]" placeholder="Enter material name" required>
+        </td>
+        <td>
+            <select class="form-select form-select-sm" name="material_unit[]">
+                <option value="pcs">Pieces (pcs)</option>
+                <option value="kg">Kilograms (kg)</option>
+                <option value="m">Meters (m)</option>
+                <option value="m2">Square Meters (m²)</option>
+                <option value="m3">Cubic Meters (m³)</option>
+                <option value="bags">Bags</option>
+                <option value="boxes">Boxes</option>
+                <option value="bundles">Bundles</option>
+                <option value="rolls">Rolls</option>
+                <option value="liters">Liters</option>
+            </select>
+        </td>
+        <td>
+            <input type="number" class="form-control form-control-sm" name="material_quantity[]" placeholder="0" min="0.01" step="0.01" required>
+        </td>
+        <td>
+            <input type="text" class="form-control form-control-sm" name="material_batch[]" placeholder="Optional">
+        </td>
+        <td class="text-center">
+            <button type="button" class="btn btn-danger btn-xs" onclick="removeMaterial(${materialCounter})">
+                <i class="fas fa-trash"></i>
+            </button>
+        </td>
+    `;
+    
+    tbody.appendChild(row);
+});
+
+// Remove material row
+function removeMaterial(id) {
+    const row = document.getElementById(`material-row-${id}`);
+    if (row) {
+        row.remove();
+    }
+    
+    // Show empty state if no materials left
+    const tbody = document.getElementById('materialsTableBody');
+    if (tbody.children.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" class="text-center text-muted py-4">
+                    <i class="fas fa-inbox fa-2x mb-2"></i>
+                    <p class="mb-0">No materials added yet. Click "Add Material" to start.</p>
+                </td>
+            </tr>
+        `;
+    }
+    
+    // Renumber rows
+    renumberRows();
+}
+
+// Renumber table rows
+function renumberRows() {
+    const rows = document.querySelectorAll('#materialsTableBody tr');
+    rows.forEach((row, index) => {
+        if (!row.querySelector('td[colspan="6"]')) {
+            const firstCell = row.querySelector('td:first-child');
+            if (firstCell) {
+                firstCell.textContent = index + 1;
+            }
+        }
+    });
+}
+
+// Form submission
+document.getElementById('deliveryForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const tbody = document.getElementById('materialsTableBody');
+    if (tbody.querySelector('td[colspan="6"]')) {
+        alert('Please add at least one material to deliver.');
+        return;
+    }
+    
+    // Here you would normally submit the form
+    alert('Delivery submitted successfully! (Form submission not yet implemented)');
+});
+
+// Set today's date as default
+document.getElementById('deliveryDate').valueAsDate = new Date();
+</script>
+
+{% endblock %}

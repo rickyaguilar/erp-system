@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>{% block title %}ERP System{% endblock %}</title>
+    {% load static %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+</head>
+<body>
+    {% if user.is_authenticated %}
+    <!-- Include Navbar -->
+    {% include 'partials/navbar.html' %}
+    
+    <!-- Include Sidebar -->
+    {% include 'partials/sidebar.html' %}
+    {% endif %}
+
+    <main class="{% if user.is_authenticated %}main-content{% else %}d-flex align-items-center min-vh-100{% endif %}">
+        {% if user.is_authenticated %}
+        <div class="content-wrapper">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    {% if user.is_authenticated %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            const mainContent = document.querySelector('.main-content');
+            
+            // Check if we're on desktop (large screen)
+            function isDesktop() {
+                return window.innerWidth >= 992;
+            }
+            
+            // Save sidebar state to localStorage
+            function saveSidebarState(isOpen) {
+                localStorage.setItem('sidebarOpen', isOpen.toString());
+            }
+            
+            // Get sidebar state from localStorage
+            function getSidebarState() {
+                const saved = localStorage.getItem('sidebarOpen');
+                if (saved === null) {
+                    // Default: open on desktop, closed on mobile
+                    return isDesktop();
+                }
+                return saved === 'true';
+            }
+            
+            // Apply sidebar state
+            function applySidebarState(isOpen, immediate = false) {
+                // Disable transitions for immediate state changes
+                if (immediate) {
+                    sidebar.classList.add('no-transition');
+                    mainContent.classList.add('no-transition');
+                }
+                
+                if (isOpen) {
+                    sidebar.classList.add('show');
+                    if (isDesktop()) {
+                        mainContent.classList.add('sidebar-open');
+                        sidebarOverlay.classList.remove('show');
+                    } else {
+                        sidebarOverlay.classList.add('show');
+                    }
+                } else {
+                    sidebar.classList.remove('show');
+                    mainContent.classList.remove('sidebar-open');
+                    sidebarOverlay.classList.remove('show');
+                }
+                
+                // Re-enable transitions after state is applied
+                if (immediate) {
+                    setTimeout(() => {
+                        sidebar.classList.remove('no-transition');
+                        mainContent.classList.remove('no-transition');
+                    }, 10);
+                }
+            }
+            
+            // Toggle sidebar
+            function toggleSidebar() {
+                const isCurrentlyShown = sidebar.classList.contains('show');
+                const newState = !isCurrentlyShown;
+                
+                applySidebarState(newState);
+                saveSidebarState(newState);
+            }
+            
+            // Initialize sidebar state
+            function initSidebar() {
+                const shouldBeOpen = getSidebarState();
+                applySidebarState(shouldBeOpen, true); // Use immediate=true on page load
+            }
+            
+            // Event listeners
+            if (sidebarToggle) {
+                sidebarToggle.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    toggleSidebar();
+                });
+            }
+            
+            // Close sidebar when clicking overlay (mobile only)
+            if (sidebarOverlay) {
+                sidebarOverlay.addEventListener('click', function() {
+                    sidebar.classList.remove('show');
+                    sidebarOverlay.classList.remove('show');
+                    mainContent.classList.remove('sidebar-open');
+                });
+            }
+            
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                // Preserve user's sidebar preference on resize
+                const isOpen = sidebar.classList.contains('show');
+                setTimeout(() => applySidebarState(isOpen), 100);
+            });
+            
+            // Initialize on page load
+            initSidebar();
+        });
+    </script>
+    {% endif %}
+</body>
+</html>

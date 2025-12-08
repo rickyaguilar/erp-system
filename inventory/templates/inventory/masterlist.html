@@ -1,0 +1,145 @@
+{% extends "base_module.html" %}
+{% load humanize %}
+
+{% block content %}
+<style>
+/* Remove card hover animations */
+.card {
+    transition: none !important;
+    transform: none !important;
+}
+
+.card:hover {
+    transition: none !important;
+    transform: none !important;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+}
+
+.table tbody tr:hover {
+    background-color: #f8f9fa !important;
+}
+</style>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Page Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="mb-0">Inventory Master List</h2>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item">
+                            <i class="fas fa-boxes me-1"></i>Inventory
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">Master List</li>
+                    </ol>
+                </nav>
+            </div>
+
+            <!-- Master List Table -->
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="card-title mb-0">
+                        All Materials ({{ total_items }})
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+                        <table class="table mb-0">
+                            <thead style="background-color: #ffffff !important;">
+                                <tr style="background-color: #ffffff !important;">
+                                    <th style="background-color: #ffffff !important; color: #000000 !important;">Item Code</th>
+                                    <th style="background-color: #ffffff !important; color: #000000 !important;">Material Name</th>
+                                    <th style="background-color: #ffffff !important; color: #000000 !important;">Category</th>
+                                    <th style="background-color: #ffffff !important; color: #000000 !important;">Unit</th>
+                                    <th style="background-color: #ffffff !important; color: #000000 !important;">Quantity on Hand</th>
+                                    <th style="background-color: #ffffff !important; color: #000000 !important;">Unit Price</th>
+                                    <th style="background-color: #ffffff !important; color: #000000 !important;">Total Value</th>
+                                    <!-- <th style="background-color: #ffffff !important; color: #000000 !important;" class="text-center">Actions</th> -->
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in items %}
+                                <tr>
+                                    <td><span class="fw-bold text-primary">{{ item.item_code }}</span></td>
+                                    <td>{{ item.material_name }}</td>
+                                    <td>{{ item.category }}</td>
+                                    <td>{{ item.unit }}</td>
+                                    <td>{{ item.quantity_on_hand|floatformat:0 }}</td>
+                                    <td>₱ {{ item.unit_price|floatformat:2|intcomma }}</td>
+                                    <td class="fw-bold text-success">₱ {{ item.total_value|floatformat:2|intcomma }}</td>
+                                    <td class="text-center">
+                                        <!-- <div class="d-flex gap-2 justify-content-center">
+                                            <button class="btn btn-primary btn-xs" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-danger btn-xs" title="Delete">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div> -->
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="8" class="text-center py-5">
+                                        <div class="text-muted">
+                                            <i class="fas fa-inbox fa-3x mb-3"></i>
+                                            <h5>No materials found</h5>
+                                            <p>No materials have been added to the inventory yet.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    {% if items.has_other_pages %}
+                    <div class="d-flex justify-content-between align-items-center p-3 border-top">
+                        <div class="text-muted">
+                            Showing {{ items.start_index }} to {{ items.end_index }} of {{ items.paginator.count }} results
+                        </div>
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination mb-0">
+                                {% if items.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ items.previous_page_number }}">Previous</a>
+                                </li>
+                                {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">Previous</span>
+                                </li>
+                                {% endif %}
+                                
+                                {% for num in items.paginator.page_range %}
+                                {% if items.number == num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                                {% elif num > items.number|add:'-3' and num < items.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                </li>
+                                {% endif %}
+                                {% endfor %}
+                                
+                                {% if items.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ items.next_page_number }}">Next</a>
+                                </li>
+                                {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">Next</span>
+                                </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

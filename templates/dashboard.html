@@ -1,0 +1,298 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Dashboard - ERP System{% endblock %}
+
+{% block content %}
+<style>
+/* Remove card hover animations */
+.card {
+    transition: none !important;
+    transform: none !important;
+}
+
+.card:hover {
+    transition: none !important;
+    transform: none !important;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+}
+
+.project-status-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+}
+
+.progress {
+    height: 20px;
+}
+
+.financial-card {
+    border-left: 4px solid;
+}
+</style>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3">Construction Dashboard</h1>
+                <small class="text-muted">{{ "now"|date:"F j, Y - g:i A" }}</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-primary">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="card-title text-muted mb-1">Total Projects</h6>
+                            <h3 class="mb-0 text-primary">{{ total_projects }}</h3>
+                            <small class="text-muted">Active: {{ in_progress }}</small>
+                        </div>
+                        <div class="text-primary">
+                            <i class="fas fa-building fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-success">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="card-title text-muted mb-1">Total Budget</h6>
+                            <h3 class="mb-0 text-success">₱{{ total_budget|floatformat:0|intcomma }}</h3>
+                            <small class="text-muted">All Projects</small>
+                        </div>
+                        <div class="text-success">
+                            <i class="fas fa-money-bill-wave fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-info">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="card-title text-muted mb-1">Receivables</h6>
+                            <h3 class="mb-0 text-info">₱{{ total_receivables|floatformat:0|intcomma }}</h3>
+                            <small class="text-muted">Outstanding</small>
+                        </div>
+                        <div class="text-info">
+                            <i class="fas fa-hand-holding-usd fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-warning">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="card-title text-muted mb-1">Payables</h6>
+                            <h3 class="mb-0 text-warning">₱{{ total_payables|floatformat:0|intcomma }}</h3>
+                            <small class="text-muted">Due</small>
+                        </div>
+                        <div class="text-warning">
+                            <i class="fas fa-file-invoice-dollar fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Projects List -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-project-diagram me-2"></i>Active Projects
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead style="background-color: #ffffff !important;">
+                                <tr>
+                                    <th style="background-color: #ffffff !important; color: #000000 !important; width: 5%;">#</th>
+                                    <th style="background-color: #ffffff !important; color: #000000 !important; width: 25%;">Project Name</th>
+                                    <th style="background-color: #ffffff !important; color: #000000 !important; width: 15%;">Location</th>
+                                    <th style="background-color: #ffffff !important; color: #000000 !important; width: 10%;">Status</th>
+                                    <th style="background-color: #ffffff !important; color: #000000 !important; width: 30%;">Progress</th>
+                                    <th style="background-color: #ffffff !important; color: #000000 !important; width: 15%;" class="text-end">Budget</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for project in projects %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>
+                                        <strong>{{ project.name }}</strong><br>
+                                        <small class="text-muted">Target: {{ project.target_completion }}</small>
+                                    </td>
+                                    <td>{{ project.location }}</td>
+                                    <td>
+                                        {% if project.status == 'Completed' %}
+                                            <span class="text-success fw-bold">{{ project.status }}</span>
+                                        {% elif project.status == 'In Progress' %}
+                                            <span class="text-primary fw-bold">{{ project.status }}</span>
+                                        {% else %}
+                                            <span class="text-secondary fw-bold">{{ project.status }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="progress">
+                                            <div class="progress-bar 
+                                                {% if project.progress >= 75 %}bg-success
+                                                {% elif project.progress >= 50 %}bg-info
+                                                {% elif project.progress >= 25 %}bg-warning
+                                                {% else %}bg-danger
+                                                {% endif %}" 
+                                                role="progressbar" 
+                                                style="width: {{ project.progress }}%;" 
+                                                aria-valuenow="{{ project.progress }}" 
+                                                aria-valuemin="0" 
+                                                aria-valuemax="100">
+                                                {{ project.progress }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-end">
+                                        <strong>₱{{ project.budget|floatformat:0|intcomma }}</strong>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Financial Summary by Project -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-line me-2"></i>Financial Summary by Project
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead style="background-color: #ffffff !important;">
+                                <tr>
+                                    <th style="background-color: #ffffff !important; color: #000000 !important; width: 5%;">#</th>
+                                    <th style="background-color: #ffffff !important; color: #000000 !important; width: 30%;">Project Name</th>
+                                    <th style="background-color: #ffffff !important; color: #000000 !important; width: 15%;" class="text-end">Budget</th>
+                                    <th style="background-color: #ffffff !important; color: #000000 !important; width: 15%;" class="text-end">Expenses</th>
+                                    <th style="background-color: #ffffff !important; color: #000000 !important; width: 15%;" class="text-end">Receivables</th>
+                                    <th style="background-color: #ffffff !important; color: #000000 !important; width: 15%;" class="text-end">Payables</th>
+                                    <th style="background-color: #ffffff !important; color: #000000 !important; width: 5%;" class="text-center">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for project in projects %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>
+                                        <strong>{{ project.name }}</strong><br>
+                                        <small class="text-muted">{{ project.location }}</small>
+                                    </td>
+                                    <td class="text-end">
+                                        <span class="text-primary fw-bold">₱{{ project.budget|floatformat:0|intcomma }}</span>
+                                    </td>
+                                    <td class="text-end">
+                                        <span class="text-danger">₱{{ project.spent|floatformat:0|intcomma }}</span><br>
+                                        <small class="text-muted">{% widthratio project.spent project.budget 100 %}%</small>
+                                    </td>
+                                    <td class="text-end">
+                                        <span class="text-info fw-bold">₱{{ project.receivables|floatformat:0|intcomma }}</span>
+                                    </td>
+                                    <td class="text-end">
+                                        <span class="text-warning fw-bold">₱{{ project.payables|floatformat:0|intcomma }}</span>
+                                    </td>
+                                    <td class="text-center">
+                                        {% if project.budget_status == 'over_budget' %}
+                                            <span class="text-danger fw-bold">Over Budget</span>
+                                        {% elif project.budget_status == 'near_budget' %}
+                                            <span class="text-warning fw-bold">Near Budget</span>
+                                        {% else %}
+                                            <span class="text-success fw-bold">On Budget</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                <tr class="table-light fw-bold">
+                                    <td colspan="2" class="text-end">TOTAL:</td>
+                                    <td class="text-end text-primary">₱{{ total_budget|floatformat:0|intcomma }}</td>
+                                    <td class="text-end text-danger">₱{{ total_spent|floatformat:0|intcomma }}</td>
+                                    <td class="text-end text-info">₱{{ total_receivables|floatformat:0|intcomma }}</td>
+                                    <td class="text-end text-warning">₱{{ total_payables|floatformat:0|intcomma }}</td>
+                                    <td></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if user is actually authenticated by making a simple request
+    // This prevents cached pages from being accessed after logout
+    
+    // Set a session flag when the page loads
+    sessionStorage.setItem('dashboard_loaded', 'true');
+    
+    // Check if user came from browser back button after logout
+    if (performance.navigation.type === 2) { // Back button
+        // Make a quick AJAX call to verify authentication status
+        fetch('{% url "dashboard" %}', {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            }
+        })
+        .then(response => {
+            if (response.status === 302 || response.redirected) {
+                // User is not authenticated, redirect to login
+                alert('Please login again. Your session has expired.');
+                window.location.href = '{% url "login" %}';
+            }
+        })
+        .catch(error => {
+            // On error, redirect to login as well
+            alert('Please login again. Your session has expired.');
+            window.location.href = '{% url "login" %}';
+        });
+    }
+});
+
+// Clear session storage when user logs out
+window.addEventListener('beforeunload', function() {
+    if (document.activeElement && document.activeElement.type === 'submit' && 
+        document.activeElement.closest('form') && 
+        document.activeElement.closest('form').action.includes('logout')) {
+        sessionStorage.removeItem('dashboard_loaded');
+    }
+});
+</script>
+{% endblock %}

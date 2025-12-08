@@ -1,0 +1,452 @@
+{% extends "base_module.html" %}
+
+{% block content %}
+<style>
+/* Remove card and table hover animations */
+.card {
+    transition: none !important;
+    transform: none !important;
+}
+
+.card:hover {
+    transition: none !important;
+    transform: none !important;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+}
+
+.table tbody tr {
+    transition: none !important;
+}
+
+.table tbody tr:hover {
+    background-color: transparent !important;
+    transition: none !important;
+}
+</style>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Page Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="mb-0">Purchase Management</h2>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item">
+                            <i class="fas fa-boxes me-1"></i>Inventory
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">Purchase Management</li>
+                    </ol>
+                </nav>
+            </div>
+
+            <!-- Approved Requests Table -->
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="card-title mb-0">
+                        Approved Material Requests ({{ total_requests }})
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+                        <table class="table table-bordered mb-0">
+                            <thead style="background-color: #ffffff !important; position: sticky; top: 0; z-index: 10;">
+                                <tr>
+                                    <th class="text-uppercase" style="background-color: #ffffff !important; color: #000000 !important; width: 9%;">Request No.</th>
+                                    <th class="text-uppercase" style="background-color: #ffffff !important; color: #000000 !important; width: 17%;">Project Name</th>
+                                    <th class="text-uppercase" style="background-color: #ffffff !important; color: #000000 !important; width: 10%;">Requested By</th>
+                                    <th class="text-uppercase" style="background-color: #ffffff !important; color: #000000 !important; width: 9%;">Date Requested</th>
+                                    <th class="text-uppercase" style="background-color: #ffffff !important; color: #000000 !important; width: 9%;">Delivery Date</th>
+                                    <th class="text-uppercase" style="background-color: #ffffff !important; color: #000000 !important; width: 10%;">Approved By</th>
+                                    <th class="text-uppercase text-center" style="background-color: #ffffff !important; color: #000000 !important; width: 10%;">Purchase Status</th>
+                                    <th class="text-uppercase" style="background-color: #ffffff !important; color: #000000 !important; width: 10%;">Purchase Request Approver</th>
+                                    <th class="text-uppercase text-center" style="background-color: #ffffff !important; color: #000000 !important; width: 16%;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for request in requests %}
+                                <tr>
+                                    <td>{{ request.request_number }}</td>
+                                    <td>{{ request.project_name }}</td>
+                                    <td>{{ request.requested_by.get_full_name|default:request.requested_by.username }}</td>
+                                    <td>{{ request.created_at|date:"M d, Y" }}</td>
+                                    <td>{{ request.delivery_date_needed|date:"M d, Y" }}</td>
+                                    <td>
+                                        {% if request.approved_by %}
+                                            {{ request.approved_by.get_full_name|default:request.approved_by.username }}<br>
+                                            <small class="text-muted">{{ request.approved_date|date:"M d, Y" }}</small>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        {% if request.purchase_status == 'approved_for_purchase' %}
+                                            <span class="text-success fw-bold">Approved for Purchase</span>
+                                        {% elif request.purchase_status == 'rejected' %}
+                                            <span class="text-danger fw-bold">Rejected</span>
+                                        {% else %}
+                                            <span class="text-warning fw-bold">Pending</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if request.purchase_approved_by %}
+                                            {{ request.purchase_approved_by.get_full_name|default:request.purchase_approved_by.username }}<br>
+                                            <small class="text-muted">{{ request.purchase_approved_date|date:"M d, Y" }}</small>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        <button type="button" class="btn btn-info btn-xs me-1" onclick="viewRequest({{ request.id }})" title="View Details">
+                                            <i class="fas fa-eye"></i> View
+                                        </button>
+                                        {% if request.purchase_status == 'pending' %}
+                                        <button type="button" class="btn btn-danger btn-xs me-1" onclick="rejectRequest({{ request.id }}, '{{ request.request_number }}')" title="Reject">
+                                            <i class="fas fa-times"></i> Reject
+                                        </button>
+                                        <button type="button" class="btn btn-success btn-xs" onclick="approvePurchase({{ request.id }}, '{{ request.request_number }}')" title="Approve to Purchase">
+                                            <i class="fas fa-check"></i> Approve
+                                        </button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="9" class="text-center text-muted py-4">
+                                        <i class="fas fa-inbox fa-2x mb-2"></i>
+                                        <p class="mb-0">No approved requests available for purchase</p>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    {% if requests.has_other_pages %}
+                    <div class="d-flex justify-content-between align-items-center p-3 border-top">
+                        <div class="text-muted">
+                            Showing {{ requests.start_index }} to {{ requests.end_index }} of {{ requests.paginator.count }} results
+                        </div>
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination mb-0">
+                                {% if requests.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ requests.previous_page_number }}">Previous</a>
+                                </li>
+                                {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">Previous</span>
+                                </li>
+                                {% endif %}
+                                
+                                {% for num in requests.paginator.page_range %}
+                                {% if requests.number == num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                                {% elif num > requests.number|add:'-3' and num < requests.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                </li>
+                                {% endif %}
+                                {% endfor %}
+                                
+                                {% if requests.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ requests.next_page_number }}">Next</a>
+                                </li>
+                                {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">Next</span>
+                                </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View Request Modal -->
+<div class="modal fade" id="viewRequestModal" tabindex="-1" aria-labelledby="viewRequestModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title" id="viewRequestModalLabel">Request Details</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="requestDetailsContent">
+                <!-- Content will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reject Confirmation Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="rejectModalLabel">Reject Request</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to reject request <strong id="rejectRequestNumber"></strong>?</p>
+                <div class="mb-3">
+                    <label for="rejectReason" class="form-label">Reason for rejection:</label>
+                    <textarea class="form-control" id="rejectReason" rows="3" placeholder="Enter reason..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger btn-sm" id="confirmRejectBtn">Confirm Reject</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Approve Purchase Modal -->
+<div class="modal fade" id="approvePurchaseModal" tabindex="-1" aria-labelledby="approvePurchaseModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="approvePurchaseModalLabel">Approve to Purchase</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Approve request <strong id="purchaseRequestNumber"></strong> for purchase?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success btn-sm" id="confirmPurchaseBtn">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let selectedRequestId = null;
+
+// View Request Details
+function viewRequest(requestId) {
+    selectedRequestId = requestId;
+    const modal = new bootstrap.Modal(document.getElementById('viewRequestModal'));
+    const contentDiv = document.getElementById('requestDetailsContent');
+    
+    // Show loading
+    contentDiv.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin fa-2x"></i><p class="mt-2">Loading...</p></div>';
+    modal.show();
+    
+    // Fetch request details
+    fetch(`/inventory/request/${requestId}/details/`)
+        .then(response => response.json())
+        .then(data => {
+            contentDiv.innerHTML = generateRequestDetailsHTML(data);
+        })
+        .catch(error => {
+            contentDiv.innerHTML = '<div class="alert alert-danger">Error loading request details</div>';
+        });
+}
+
+// Generate HTML for request details
+function generateRequestDetailsHTML(data) {
+    let itemsHTML = '';
+    data.items.forEach((item, index) => {
+        itemsHTML += `
+            <tr>
+                <td>${index + 1}</td>
+                <td>${item.material_name}</td>
+                <td class="text-center">${item.quantity}</td>
+                <td class="text-end">₱ ${parseFloat(item.estimated_unit_price).toLocaleString('en-PH', {minimumFractionDigits: 2})}</td>
+                <td class="text-end">₱ ${(item.quantity * item.estimated_unit_price).toLocaleString('en-PH', {minimumFractionDigits: 2})}</td>
+            </tr>
+        `;
+    });
+    
+    const total = data.items.reduce((sum, item) => sum + (item.quantity * item.estimated_unit_price), 0);
+    
+    return `
+        <div class="card mb-3">
+            <div class="card-header bg-white">
+                <h6 class="mb-0 text-black">Request Information</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Request Number:</strong> ${data.request_number}</p>
+                        <p><strong>Requested By:</strong> ${data.requested_by}</p>
+                        <p><strong>Project Name:</strong> ${data.project_name}</p>
+                        <p><strong>Site Supervisor:</strong> ${data.site_supervisor}</p>
+                        <p><strong>Purpose:</strong> ${data.purpose || '-'}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Date Requested:</strong> ${data.created_at}</p>
+                        <p><strong>Location:</strong> ${data.project_location}</p>
+                        <p><strong>Delivery Date Needed:</strong> ${data.delivery_date_needed}</p>
+                        <p><strong>Request Status:</strong> Approved</p>
+                        <p><strong>Purchase Status:</strong> <span class="${data.purchase_status === 'approved_for_purchase' ? 'text-success' : data.purchase_status === 'rejected' ? 'text-danger' : 'text-warning'} fw-bold">${data.purchase_status_display}</span></p>
+                        ${data.approved_by ? `<p><strong>Approved By:</strong> ${data.approved_by} (${data.approved_date})</p>` : ''}
+                        ${data.purchase_approved_by ? `<p><strong>Purchase Request Approver:</strong> ${data.purchase_approved_by} (${data.purchase_approved_date})</p>` : ''}
+                        ${data.rejection_reason ? `<p><strong>Reason:</strong> <span class="text-danger">${data.rejection_reason}</span></p>` : ''}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header bg-white">
+                <h6 class="mb-0 text-black">Material List</h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-bordered mb-0">
+                        <thead>
+                            <tr>
+                                <th style="width: 5%;">#</th>
+                                <th style="width: 40%;">Material Name</th>
+                                <th style="width: 15%;" class="text-center">Quantity</th>
+                                <th style="width: 20%;" class="text-end">Unit Price</th>
+                                <th style="width: 20%;" class="text-end">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${itemsHTML}
+                        </tbody>
+                        <tfoot class="table-light">
+                            <tr>
+                                <td colspan="4" class="text-end fw-bold">Grand Total:</td>
+                                <td class="text-end fw-bold text-success">₱ ${total.toLocaleString('en-PH', {minimumFractionDigits: 2})}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Reject Request
+function rejectRequest(requestId, requestNumber) {
+    selectedRequestId = requestId;
+    document.getElementById('rejectRequestNumber').textContent = requestNumber;
+    document.getElementById('rejectReason').value = '';
+    const modal = new bootstrap.Modal(document.getElementById('rejectModal'));
+    modal.show();
+}
+
+document.getElementById('confirmRejectBtn').addEventListener('click', function() {
+    const reason = document.getElementById('rejectReason').value;
+    
+    if (!reason.trim()) {
+        alert('Please provide a reason for rejection');
+        return;
+    }
+    
+    // Get CSRF token
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+                      document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+    
+    // Send reject request to server
+    fetch(`/inventory/purchase/reject/${selectedRequestId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken
+        },
+        body: JSON.stringify({ reason: reason })
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Close modal
+        bootstrap.Modal.getInstance(document.getElementById('rejectModal')).hide();
+        
+        if (data.success) {
+            // Show success notification
+            showNotification(data.message, 'danger');
+            
+            // Reload after a short delay
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while rejecting the request');
+    });
+});
+
+// Approve Purchase
+function approvePurchase(requestId, requestNumber) {
+    selectedRequestId = requestId;
+    document.getElementById('purchaseRequestNumber').textContent = requestNumber;
+    const modal = new bootstrap.Modal(document.getElementById('approvePurchaseModal'));
+    modal.show();
+}
+
+document.getElementById('confirmPurchaseBtn').addEventListener('click', function() {
+    // Get CSRF token
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+                      document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+    
+    // Send approve purchase request to server
+    fetch(`/inventory/purchase/approve/${selectedRequestId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Close modal
+        bootstrap.Modal.getInstance(document.getElementById('approvePurchaseModal')).hide();
+        
+        if (data.success) {
+            // Show success notification
+            showNotification(data.message, 'success');
+            
+            // Reload after a short delay
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while approving the request');
+    });
+});
+
+// Show notification function
+function showNotification(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.style.position = 'fixed';
+    alertDiv.style.top = '80px';
+    alertDiv.style.left = '50%';
+    alertDiv.style.transform = 'translateX(-50%)';
+    alertDiv.style.zIndex = '9999';
+    alertDiv.style.minWidth = '400px';
+    alertDiv.style.maxWidth = '600px';
+    alertDiv.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+    document.body.appendChild(alertDiv);
+    
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+        alertDiv.remove();
+    }, 3000);
+}
+</script>
+
+{% endblock %}

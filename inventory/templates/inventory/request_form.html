@@ -1,0 +1,675 @@
+{% extends "base_module.html" %}
+
+{% block content %}
+<style>
+/* Remove card hover animations */
+.card {
+    transition: none !important;
+    transform: none !important;
+}
+
+.card:hover {
+    transition: none !important;
+    transform: none !important;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+}
+
+/* White card header with black text */
+.card-header.bg-white {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+}
+
+.card-header.bg-white .card-title {
+    color: #000000 !important;
+}
+</style>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Page Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="mb-0">Material Requests</h2>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item">
+                            <i class="fas fa-boxes me-1"></i>Inventory
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">Material Requests</li>
+                    </ol>
+                </nav>
+            </div>
+            
+            <!-- Simple Tabs -->
+            <ul class="nav nav-tabs mb-4">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'inventory:request_list' %}">
+                        <i class="fas fa-list me-2"></i>Request List
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="{% url 'inventory:request_form' %}">
+                        <i class="fas fa-plus me-2"></i>Request Form
+                    </a>
+                </li>
+            </ul>
+            
+            <!-- Error Messages -->
+            {% if messages %}
+                <div class="alert-container mb-4">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+                            <i class="fas fa-{% if message.tags == 'error' %}exclamation-triangle{% elif message.tags == 'success' %}check-circle{% elif message.tags == 'warning' %}exclamation-circle{% else %}info-circle{% endif %} me-2"></i>
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <!-- Main Form -->
+            <form method="post" id="materialRequestForm">
+                {% csrf_token %}
+                
+                {% if is_approved %}
+                <div class="alert alert-info mb-4">
+                    <i class="fas fa-info-circle me-2"></i>
+                    This request has been approved and cannot be edited.
+                </div>
+                {% endif %}
+                
+                <!-- Request Information Card -->
+                <div class="card compact-card mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="card-title mb-0 text-black">
+                            Request Information<i class="me-2"></i>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Header Section with Request Number -->
+                        <div class="row mb-4">
+                            <div class="col-6">
+                                <div class="company-header">
+                                    <span class="fw-bold text-primary" id="requestNumber">
+                                        {% if form.instance.request_number %}
+                                            {{ form.instance.request_number }}
+                                        {% else %}
+                                            {% load custom_tags %}
+                                            {% get_next_request_number %}
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="col-6 text-end">
+                                <!-- Empty space for balance -->
+                            </div>
+                        </div>
+
+                        <!-- Form Fields in 2-column layout -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="row mb-3">
+                                    <label class="col-sm-4 col-form-label">REQUESTED BY:</label>
+                                    <div class="col-sm-8">
+                                        <input type="text" class="form-control" value="{{ user.get_full_name|default:user.username }}" disabled>
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <label class="col-sm-4 col-form-label">PROJECT NAME:</label>
+                                    <div class="col-sm-8">
+                                        {{ form.project_name }}
+                                        {% if form.project_name.errors %}
+                                            <div class="text-danger small">{{ form.project_name.errors.0 }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <label class="col-sm-4 col-form-label">SITE SUPERVISOR:</label>
+                                    <div class="col-sm-8">
+                                        {{ form.site_supervisor }}
+                                        {% if form.site_supervisor.errors %}
+                                            <div class="text-danger small">{{ form.site_supervisor.errors.0 }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <label class="col-sm-4 col-form-label">REASON OF REQUEST:</label>
+                                    <div class="col-sm-8">
+                                        {{ form.purpose }}
+                                        {% if form.purpose.errors %}
+                                            <div class="text-danger small">{{ form.purpose.errors.0 }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="row mb-3">
+                                    <label class="col-sm-4 col-form-label">DATE OF REQUEST:</label>
+                                    <div class="col-sm-8">
+                                        <input type="date" class="form-control" value="{% now 'Y-m-d' %}" disabled>
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <label class="col-sm-4 col-form-label">LOCATION:</label>
+                                    <div class="col-sm-8">
+                                        {{ form.project_location }}
+                                        {% if form.project_location.errors %}
+                                            <div class="text-danger small">{{ form.project_location.errors.0 }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <label class="col-sm-4 col-form-label">DELIVERY DATE NEEDED:</label>
+                                    <div class="col-sm-8">
+                                        {{ form.delivery_date_needed }}
+                                        {% if form.delivery_date_needed.errors %}
+                                            <div class="text-danger small">{{ form.delivery_date_needed.errors.0 }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Materials Request Table -->
+                <div class="card compact-card mb-4">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">
+                            Material List
+                        </h5>
+                        {% if not is_approved %}
+                        <button type="button" class="btn btn-primary btn-xs" id="addMaterialBtn">
+                            Add Material
+                        </button>
+                        {% endif %}
+                    </div>
+                    <div class="card-body p-0">
+                        {{ formset.management_form }}
+                        
+                        <div class="table-responsive">
+                            <table class="table table-bordered materials-table mb-0" id="materialsTable">
+                                <thead style="background-color: #ffffff !important;">
+                                    <tr style="background-color: #ffffff !important;">
+                                        <th style="width: 40%; background-color: #ffffff !important; color: #000000 !important;" class="text-uppercase">NAME</th>
+                                        <th style="width: 18%; background-color: #ffffff !important; color: #000000 !important;" class="text-uppercase text-center">QUANTITY</th>
+                                        <th style="width: 18%; background-color: #ffffff !important; color: #000000 !important;" class="text-uppercase text-center">UNIT PRICE</th>
+                                        <th style="width: 16%; background-color: #ffffff !important; color: #000000 !important;" class="text-uppercase text-center">TOTAL</th>
+                                        <th style="width: 8%; background-color: #ffffff !important; color: #000000 !important;" class="text-uppercase text-center">ACTION</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="materialRows">
+                                    {% for form in formset %}
+                                        <tr class="material-row">
+                                            <td>
+                                                {{ form.material_name }}
+                                                {% if form.material_name.errors %}
+                                                    <div class="text-danger small mt-1">{{ form.material_name.errors.0 }}</div>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {{ form.quantity }}
+                                                {% if form.quantity.errors %}
+                                                    <div class="text-danger small mt-1">{{ form.quantity.errors.0 }}</div>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {{ form.estimated_unit_price }}
+                                                {% if form.estimated_unit_price.errors %}
+                                                    <div class="text-danger small mt-1">{{ form.estimated_unit_price.errors.0 }}</div>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="total-cost fw-bold">0.00</span>
+                                            </td>
+                                            <td class="text-center">
+                                                <button type="button" class="btn btn-outline-danger btn-xs remove-row" title="Remove">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <!-- Hidden fields -->
+                                        <tr class="d-none">
+                                            <td colspan="5">
+                                                {{ form.description }}
+                                                {{ form.notes }}
+                                                {{ form.id }}
+                                                {{ form.supplier_preference }}
+                                                {{ form.specification }}
+                                                {{ form.DELETE }}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                                <tfoot class="table-light">
+                                    <tr>
+                                        <td colspan="3" class="text-end fw-bold border-top-2">Grand Total:</td>
+                                        <td class="text-center fw-bold text-success border-top-2" id="grandTotal">₱ 0.00</td>
+                                        <td class="border-top-2"></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                        
+
+                        
+                    </div>
+                </div>
+
+                <!-- Submit Section -->
+                <div class="text-end mt-4 mb-4">
+                    {% if not is_approved %}
+                    <button type="button" class="btn btn-outline-secondary btn-sm me-2" onclick="clearAllFields()">
+                        Clear
+                    </button>
+                    <button type="submit" class="btn btn-success btn-sm">
+                        Submit
+                    </button>
+                    {% else %}
+                    <a href="{% url 'inventory:request_list' %}" class="btn btn-outline-secondary btn-sm">
+                        Back to List
+                    </a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for dynamic table functionality -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const isApproved = {{ is_approved|yesno:"true,false" }};
+    
+    // Calculate row total
+    function calculateRowTotal(row) {
+        const quantityInput = row.querySelector('.quantity-input, input[name*="quantity"]');
+        const priceInput = row.querySelector('.price-input, input[name*="estimated_unit_price"]');
+        const totalSpan = row.querySelector('.total-cost');
+        
+        if (quantityInput && priceInput && totalSpan) {
+            const quantity = parseFloat(quantityInput.value) || 0;
+            const price = parseFloat(priceInput.value) || 0;
+            const total = quantity * price;
+            
+            totalSpan.textContent = total.toLocaleString('en-PH', { 
+                minimumFractionDigits: 2, 
+                maximumFractionDigits: 2 
+            });
+        }
+    }
+    
+    // Calculate grand total
+    function calculateGrandTotal() {
+        let grandTotal = 0;
+        const totalSpans = document.querySelectorAll('.material-row:not([style*="display: none"]) .total-cost');
+        
+        totalSpans.forEach(function(span) {
+            const value = parseFloat(span.textContent.replace(/,/g, '')) || 0;
+            grandTotal += value;
+        });
+        
+        const grandTotalElement = document.getElementById('grandTotal');
+        if (grandTotalElement) {
+            grandTotalElement.textContent = '₱ ' + grandTotal.toLocaleString('en-PH', { 
+                minimumFractionDigits: 2, 
+                maximumFractionDigits: 2 
+            });
+        }
+    }
+    
+    // Initialize existing rows and calculate totals
+    document.querySelectorAll('.material-row').forEach(function(row) {
+        calculateRowTotal(row);
+    });
+    calculateGrandTotal();
+    
+    // Disable all form fields if approved
+    if (isApproved) {
+        const form = document.getElementById('materialRequestForm');
+        const inputs = form.querySelectorAll('input:not([type="hidden"]), select, textarea, button[type="button"]');
+        inputs.forEach(input => {
+            input.disabled = true;
+        });
+        
+        // Hide delete buttons
+        document.querySelectorAll('.remove-row').forEach(btn => {
+            btn.style.display = 'none';
+        });
+        
+        return; // Don't initialize form functionality for approved requests
+    }
+    
+    let formCount = parseInt(document.querySelector('#id_items-TOTAL_FORMS').value);
+    const maxForms = parseInt(document.querySelector('#id_items-MAX_NUM_FORMS').value);
+    
+    // Add material row
+    document.getElementById('addMaterialBtn').addEventListener('click', function() {
+        if (formCount < maxForms) {
+            const tableBody = document.getElementById('materialRows');
+            const newRow = createNewMaterialRow(formCount);
+            tableBody.insertAdjacentHTML('beforeend', newRow);
+            
+            formCount++;
+            document.querySelector('#id_items-TOTAL_FORMS').value = formCount;
+            
+            // Add event listeners to new row
+            const newRowElement = tableBody.lastElementChild;
+            addRowEventListeners(newRowElement);
+        }
+    });
+    
+    // Create new material row HTML
+    function createNewMaterialRow(index) {
+        return `
+            <tr class="material-row">
+                <td>
+                    <input type="text" name="items-${index}-material_name" class="form-control" id="id_items-${index}-material_name">
+                </td>
+                <td>
+                    <input type="number" name="items-${index}-quantity" class="form-control quantity-input" step="0.01" min="0" id="id_items-${index}-quantity">
+                </td>
+                <td>
+                    <input type="number" name="items-${index}-estimated_unit_price" class="form-control price-input" step="0.01" min="0" id="id_items-${index}-estimated_unit_price">
+                </td>
+                <td class="text-center">
+                    <span class="total-cost fw-bold">0.00</span>
+                </td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-outline-danger btn-xs remove-row" title="Remove">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                    <input type="hidden" name="items-${index}-id" id="id_items-${index}-id">
+                    <input type="hidden" name="items-${index}-DELETE" id="id_items-${index}-DELETE">
+                </td>
+            </tr>
+        `;
+    }
+    
+    // Add event listeners to rows
+    function addRowEventListeners(row) {
+        // Remove row functionality
+        const removeBtn = row.querySelector('.remove-row');
+        if (removeBtn) {
+            removeBtn.addEventListener('click', function() {
+                removeRow(row);
+            });
+        }
+        
+        // Calculate total on quantity/price change
+        const quantityInput = row.querySelector('.quantity-input');
+        const priceInput = row.querySelector('.price-input');
+        
+        if (quantityInput) {
+            quantityInput.addEventListener('input', function() {
+                calculateRowTotal(row);
+                calculateGrandTotal();
+            });
+        }
+        
+        if (priceInput) {
+            priceInput.addEventListener('input', function() {
+                calculateRowTotal(row);
+                calculateGrandTotal();
+            });
+        }
+    }
+    
+    // Remove row
+    function removeRow(row) {
+        const deleteInput = row.querySelector('input[name$="-DELETE"]');
+        const idInput = row.querySelector('input[name$="-id"]');
+        
+        // Always mark for deletion (Django will handle it properly)
+        if (deleteInput) {
+            deleteInput.value = 'on';
+        }
+        
+        // Hide the row
+        row.style.display = 'none';
+        
+        // Clear the values to avoid validation errors on hidden rows
+        const inputs = row.querySelectorAll('input:not([name$="-DELETE"]):not([name$="-id"]), select, textarea');
+        inputs.forEach(input => {
+            if (input.type === 'checkbox' || input.type === 'radio') {
+                input.checked = false;
+            } else {
+                input.value = '';
+            }
+        });
+        
+        calculateGrandTotal();
+    }
+    
+    // Initialize existing rows
+    document.querySelectorAll('.material-row').forEach(function(row) {
+        addRowEventListeners(row);
+    });
+    
+    // Recalculate totals when page loads (for existing data)
+    setTimeout(function() {
+        document.querySelectorAll('.material-row').forEach(function(row) {
+            calculateRowTotal(row);
+        });
+        calculateGrandTotal();
+    }, 100);
+    
+    // Form validation and submission with confirmation modal
+    document.getElementById('materialRequestForm').addEventListener('submit', function(e) {
+        console.log('Form submission attempted');
+        
+        // Prevent default submission
+        e.preventDefault();
+        
+        let isValid = true;
+        let errorMessage = '';
+        
+        // Get form data
+        const formData = new FormData(e.target);
+        
+        // Check required fields
+        const requiredFields = [
+            { name: 'project_name', label: 'Project Name' },
+            { name: 'site_supervisor', label: 'Site Supervisor' },
+            { name: 'delivery_date_needed', label: 'Delivery Date Needed' }
+        ];
+        
+        requiredFields.forEach(field => {
+            const value = formData.get(field.name);
+            if (!value || value.trim() === '') {
+                isValid = false;
+                errorMessage += `${field.label} is required. `;
+            }
+        });
+        
+        // Check if we have any material rows with valid data
+        const materialRows = document.querySelectorAll('.material-row:not([style*="display: none"])');
+        let hasValidMaterial = false;
+        let materialCount = 0;
+        const materialNames = [];
+        const duplicateNames = new Set();
+        
+        materialRows.forEach(function(row, index) {
+            const materialName = row.querySelector('input[name*="material_name"]');
+            const quantity = row.querySelector('input[name*="quantity"]');
+            const unitPrice = row.querySelector('input[name*="estimated_unit_price"]');
+            
+            if (materialName && materialName.value.trim() !== '') {
+                // Check for duplicate material names
+                const nameLower = materialName.value.trim().toLowerCase();
+                if (materialNames.includes(nameLower)) {
+                    duplicateNames.add(materialName.value.trim());
+                } else {
+                    materialNames.push(nameLower);
+                }
+                
+                if (quantity && parseFloat(quantity.value) > 0 && 
+                    unitPrice && parseFloat(unitPrice.value) > 0) {
+                    hasValidMaterial = true;
+                    materialCount++;
+                } else {
+                    // Specific validation messages
+                    if (!quantity || parseFloat(quantity.value) <= 0) {
+                        errorMessage += `Material "${materialName.value}" needs a valid quantity. `;
+                    }
+                    if (!unitPrice || parseFloat(unitPrice.value) <= 0) {
+                        errorMessage += `Material "${materialName.value}" needs a valid unit price. `;
+                    }
+                }
+            }
+        });
+        
+        // Check for duplicates
+        if (duplicateNames.size > 0) {
+            isValid = false;
+            duplicateNames.forEach(name => {
+                errorMessage += `Material "${name}" is already listed. Please remove duplicate entries. `;
+            });
+        }
+        
+        if (!hasValidMaterial) {
+            isValid = false;
+            if (errorMessage === '') {
+                errorMessage += 'At least one complete material entry (name, quantity, and price) is required. ';
+            }
+        }
+        
+        if (!isValid) {
+            showErrorModal(errorMessage);
+            return false;
+        }
+        
+        // Form is valid, show confirmation modal
+        showSubmissionConfirmation(formData, materialCount);
+        return false;
+    });
+
+// Show error notification modal
+function showErrorModal(errorMessage) {
+    // Split error message by periods and create list items
+    const errors = errorMessage.split('. ').filter(error => error.trim() !== '');
+    const errorList = document.getElementById('errorList');
+    
+    // Clear previous errors
+    errorList.innerHTML = '';
+    
+    // Add each error as a list item
+    errors.forEach(error => {
+        if (error.trim() !== '') {
+            const listItem = document.createElement('li');
+            listItem.textContent = error.trim();
+            errorList.appendChild(listItem);
+        }
+    });
+    
+    // Show the error modal
+    const modal = new bootstrap.Modal(document.getElementById('errorNotificationModal'));
+    modal.show();
+}
+
+// Show submission confirmation modal
+function showSubmissionConfirmation(formData, materialCount) {
+    // Show the modal
+    const modal = new bootstrap.Modal(document.getElementById('submitConfirmationModal'));
+    modal.show();
+}
+
+// Handle confirmed submission
+document.getElementById('confirmSubmitBtn').addEventListener('click', function() {
+    // Hide the modal
+    bootstrap.Modal.getInstance(document.getElementById('submitConfirmationModal')).hide();
+    
+    // Remove the submit event listener to avoid preventing submission
+    const form = document.getElementById('materialRequestForm');
+    const newForm = form.cloneNode(true);
+    form.parentNode.replaceChild(newForm, form);
+    
+    // Submit the form
+    newForm.submit();
+});
+});
+
+// Clear all fields function
+function clearAllFields() {
+    if (confirm('Are you sure you want to clear all fields? This action cannot be undone.')) {
+        // Clear all form inputs
+        document.querySelectorAll('#materialRequestForm input:not([disabled]), #materialRequestForm textarea, #materialRequestForm select:not([disabled])').forEach(function(field) {
+            if (field.type === 'text' || field.type === 'textarea' || field.type === 'number' || field.type === 'date') {
+                field.value = '';
+            } else if (field.type === 'select-one') {
+                field.selectedIndex = 0;
+            }
+        });
+        
+        // Reset total calculations
+        document.querySelectorAll('.total-cost').forEach(function(total) {
+            total.textContent = '0.00';
+        });
+        
+        // Update grand total
+        calculateGrandTotal();
+    }
+}
+</script>
+
+<!-- Error Notification Modal -->
+<div class="modal fade" id="errorNotificationModal" tabindex="-1" aria-labelledby="errorNotificationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="errorNotificationModalLabel">
+                    Validation Error
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <h6 class="mb-1">Please fix the following errors:</h6>
+                    <small class="text-muted">All required fields must be completed before submitting.</small>
+                </div>
+                
+                <div class="alert alert-danger mb-0" id="errorMessageContainer">
+                    <ul class="mb-0" id="errorList">
+                        <!-- Error messages will be populated here -->
+                    </ul>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
+                    Got it
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div class="modal fade" id="submitConfirmationModal" tabindex="-1" aria-labelledby="submitConfirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="submitConfirmationModalLabel">
+                    Confirm Submission
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex align-items-center justify-content-center">
+                    <div>
+                        <h6 class="mb-0">Confirm submit request?</h6>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">
+                    Cancel
+                </button>
+                <button type="button" class="btn btn-success btn-sm" id="confirmSubmitBtn">
+                    Confirm
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

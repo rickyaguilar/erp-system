@@ -1,0 +1,974 @@
+/* Custom CSS for ERP System */
+
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/* Black Navbar */
+.navbar {
+    margin-bottom: 0;
+    z-index: 1050; /* Ensure navbar is above sidebar */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Burger menu button */
+#sidebarToggle {
+    border: none !important;
+    background: none !important;
+    box-shadow: none !important;
+    padding: 8px;
+}
+
+#sidebarToggle:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border-radius: 4px;
+}
+
+#sidebarToggle:focus {
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+/* Navbar brand styling */
+.navbar-brand {
+    font-weight: 600;
+    font-size: 1.2rem;
+}
+
+/* Account dropdown styling */
+.dropdown-toggle::after {
+    margin-left: 8px;
+}
+
+.dropdown-menu {
+    min-width: 200px;
+    border: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    padding: 8px 0;
+}
+
+.dropdown-header {
+    padding: 12px 16px 8px 16px;
+    margin-bottom: 0;
+}
+
+.dropdown-item {
+    padding: 8px 16px;
+    transition: all 0.2s ease;
+}
+
+.dropdown-item:hover {
+    background-color: #f8f9fa;
+}
+
+.dropdown-item.text-danger:hover {
+    background-color: #f8d7da;
+    color: #721c24 !important;
+}
+
+.dropdown-divider {
+    margin: 4px 0;
+}
+
+/* Avatar styling */
+.rounded-circle {
+    position: relative;
+}
+
+.bg-success {
+    background-color: #28a745 !important;
+}
+
+/* Login page specific styles */
+.min-vh-100 {
+    min-height: 100vh;
+    background: #ffffff;
+}
+
+.card {
+    border: 2px solid #d1d5db;
+    border-radius: 15px;
+}
+
+.card-body {
+    padding: 2rem;
+}
+
+/* Form styling */
+.form-control {
+    border-radius: 8px;
+    border: 1px solid #9ca3af;
+    padding: 15px 20px;
+    font-size: 16px;
+    background-color: #f8f9fa;
+    transition: all 0.3s ease;
+}
+
+.form-control-lg {
+    padding: 18px 20px;
+    font-size: 16px;
+}
+
+.form-control:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    background-color: #ffffff;
+}
+
+.form-label {
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: #6c757d;
+}
+
+.form-check {
+    margin: 20px 0;
+}
+
+.form-check-input {
+    margin-top: 4px;
+}
+
+.form-check-label {
+    font-weight: 500;
+    cursor: pointer;
+    color: #000000 !important;
+}
+
+/* Login page title */
+.card-title.text-primary {
+    color: #000000 !important;
+}
+
+.btn {
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-weight: 500;
+}
+
+.btn-lg {
+    padding: 15px 25px;
+    font-size: 18px;
+}
+
+/* Dashboard specific styles */
+.navbar-brand strong {
+    font-size: 1.5rem;
+    letter-spacing: -0.5px;
+}
+
+.card-title {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+/* Dashboard cards */
+.card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Statistics cards */
+.border-primary {
+    border-left: 4px solid #0d6efd !important;
+}
+
+.border-success {
+    border-left: 4px solid #198754 !important;
+}
+
+.border-warning {
+    border-left: 4px solid #ffc107 !important;
+}
+
+.border-info {
+    border-left: 4px solid #0dcaf0 !important;
+}
+
+/* Alert styling */
+.alert {
+    border: none;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .card-body {
+        padding: 1.5rem;
+    }
+    
+    .container {
+        padding: 15px;
+    }
+}
+
+/* Icon styling */
+.fas {
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+}
+
+/* Custom utilities */
+.opacity-75 {
+    opacity: 0.75;
+}
+
+.text-primary {
+    color: #0d6efd !important;
+}
+
+.text-success {
+    color: #198754 !important;
+}
+
+.text-warning {
+    color: #ffc107 !important;
+}
+
+.text-info {
+    color: #0dcaf0 !important;
+}
+
+/* Sidebar Styles */
+.sidebar {
+    position: fixed;
+    top: 60px; /* Height of navbar with padding */
+    left: -250px; /* Hidden by default */
+    width: 250px;
+    height: calc(100vh - 60px);
+    background-color: #ffffff;
+    border-right: 1px solid #e0e0e0;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+    z-index: 1040; /* Below navbar but above content */
+    overflow-y: auto;
+    transition: left 0.3s ease;
+}
+
+.sidebar.show {
+    left: 0 !important; /* Show sidebar - use !important to override responsive rules */
+}
+
+/* Prevent sidebar animation on page load */
+.sidebar.no-transition {
+    transition: none !important;
+}
+
+.main-content.no-transition {
+    transition: none !important;
+}
+
+/* Breadcrumb styling */
+.breadcrumb {
+    background-color: transparent;
+    padding: 0;
+    margin: 0;
+}
+
+.breadcrumb-item {
+    color: #6c757d;
+    font-size: 14px;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    content: "›";
+    color: #adb5bd;
+    font-weight: bold;
+    padding: 0 8px;
+}
+
+.breadcrumb-item a {
+    color: #4f46e5;
+    text-decoration: none;
+}
+
+.breadcrumb-item a:hover {
+    color: #3730a3;
+    text-decoration: underline;
+}
+
+.breadcrumb-item.active {
+    color: #495057;
+    font-weight: 500;
+}
+
+/* Material Request Form Styles */
+.card-header.bg-primary,
+.card-header.bg-info,
+.card-header.bg-success {
+    background-color: #212529 !important;
+    color: white !important;
+}
+
+/* Professional card styling */
+.compact-card {
+    border: 1px solid #dee2e6;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.compact-card .card-body {
+    padding: 2rem;
+}
+
+.compact-card .card-header {
+    padding: 1rem 2rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+    background-color: #212529 !important;
+}
+
+.compact-card .card-header h5 {
+    font-size: 1.1rem;
+    margin-bottom: 0;
+    font-weight: 600;
+    color: white;
+}
+
+/* Professional form spacing */
+.compact-card .mb-3 {
+    margin-bottom: 1.25rem !important;
+}
+
+.compact-card .row {
+    margin-left: -0.5rem;
+    margin-right: -0.5rem;
+}
+
+.compact-card .row > * {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+}
+
+/* Form input styling - Professional and consistent */
+.form-control,
+.form-select {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    height: 38px; /* Fixed consistent height */
+    line-height: 1.5;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    outline: 0;
+}
+
+/* Textarea specific sizing */
+textarea.form-control {
+    height: auto;
+    min-height: 76px; /* Consistent height for textareas */
+    resize: vertical;
+    line-height: 1.5;
+}
+
+/* Select dropdown styling */
+.form-select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m1 6 7 7 7-7'/%3e%3c/svg%3e");
+}
+
+/* Readonly input styling */
+input[readonly] {
+    background-color: #e9ecef;
+    border-color: #ced4da;
+    color: #6c757d;
+    cursor: not-allowed;
+}
+
+/* Professional form layout */
+.form-row {
+    margin-bottom: 1rem;
+}
+
+/* Professional table styling */
+.table-striped > tbody > tr:nth-of-type(odd) > td {
+    background-color: rgba(0, 0, 0, 0.025);
+}
+
+.table-hover > tbody > tr:hover > td {
+    background-color: rgba(0, 123, 255, 0.075);
+    transition: background-color 0.15s ease-in-out;
+}
+
+.table thead th {
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #dee2e6;
+    background-color: #343a40 !important;
+    color: white !important;
+    vertical-align: middle;
+    padding: 0.75rem 0.5rem;
+}
+
+.table tbody td {
+    vertical-align: middle;
+    font-size: 0.875rem;
+    padding: 0.75rem 0.5rem;
+    border-color: #e9ecef;
+}
+
+/* Badge styling for row numbers */
+.badge {
+    font-size: 0.75rem;
+    padding: 0.35rem 0.65rem;
+    border-radius: 50%;
+}
+
+/* Priority select styling */
+.priority-select {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    height: auto;
+    border: 1px solid #ced4da;
+}
+
+/* Input group styling for currency */
+.input-group-sm .input-group-text {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    background-color: #f8f9fa;
+    border-color: #ced4da;
+}
+
+.input-group-sm .form-control {
+    font-size: 0.75rem;
+    height: auto;
+    padding: 0.25rem 0.5rem;
+}
+
+/* Border styling for table footer */
+.border-top-2 {
+    border-top: 3px solid #dee2e6 !important;
+}
+
+/* Total calculation styling */
+.total-cost {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: 600;
+    color: #198754;
+}
+
+#grandTotal {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #198754 !important;
+}
+
+/* Card spacing improvements */
+.card .card-body .row.g-3 {
+    margin-top: 0;
+}
+
+.card .card-body .row.g-3 > * {
+    padding-top: 0.75rem;
+}
+
+.card .card-body .row.g-2 {
+    margin-top: 0;
+}
+
+.card .card-body .row.g-2 > * {
+    padding-top: 0.5rem;
+}
+
+/* Required field indicator */
+.required-field::after {
+    content: " *";
+    color: #dc3545;
+    font-weight: bold;
+}
+
+/* Enhanced readonly field styling */
+.form-control[readonly] {
+    background-color: #f8f9fa;
+    border-color: #e9ecef;
+    color: #6c757d;
+    cursor: default;
+}
+
+/* Table alignment helpers */
+.text-end {
+    text-align: right !important;
+}
+
+.text-center {
+    text-align: center !important;
+}
+
+/* Professional button styling */
+.btn-outline-danger:hover {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: white;
+}
+
+.btn-outline-light {
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.btn-outline-light:hover {
+    background-color: white;
+    color: #198754;
+}
+
+/* Card header improvements */
+.card-header.bg-primary {
+    background: linear-gradient(135deg, #0d6efd 0%, #0056b3 100%) !important;
+}
+
+.card-header.bg-success {
+    background: linear-gradient(135deg, #198754 0%, #146c43 100%) !important;
+}
+
+.card-header.bg-info {
+    background: linear-gradient(135deg, #0dcaf0 0%, #0aa2c0 100%) !important;
+}
+
+.card-header.bg-secondary {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%) !important;
+}
+
+.card-header.bg-dark {
+    background: linear-gradient(135deg, #343a40 0%, #212529 100%) !important;
+}
+
+/* Project icon styling */
+.project-icon .badge-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 8px;
+}
+
+/* User avatars styling */
+.user-avatars {
+    display: flex;
+    align-items: center;
+}
+
+.user-avatars img {
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Status badge styling */
+.status-badge {
+    font-size: 0.75rem;
+    padding: 0.35rem 0.65rem;
+    border-radius: 20px;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+/* Table row styling to match image */
+.table tbody tr {
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* Dropdown button styling */
+.dropdown-toggle::after {
+    display: none;
+}
+
+/* Extra small button sizing */
+.btn-xs {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    line-height: 1.2;
+    border-radius: 0.25rem;
+}
+
+/* Table header styling */
+.table-secondary th {
+    background-color: #e9ecef !important;
+    color: #495057 !important;
+    font-weight: 600;
+    font-size: 0.75rem;
+}
+
+/* Tab styling */
+.nav-tabs .nav-link {
+    color: #495057;
+    border: 1px solid transparent;
+    border-top-left-radius: 0.375rem;
+    border-top-right-radius: 0.375rem;
+    padding: 0.75rem 1rem;
+}
+
+.nav-tabs .nav-link:hover {
+    border-color: #e9ecef #e9ecef #dee2e6;
+    color: #0d6efd;
+}
+
+.nav-tabs .nav-link.active {
+    color: #495057;
+    background-color: #fff;
+    border-color: #dee2e6 #dee2e6 #fff;
+    font-weight: 600;
+}
+
+/* Clickable table rows */
+.clickable-row:hover {
+    background-color: #f8f9fa !important;
+}
+
+/* Form check styling */
+.form-check {
+    margin-bottom: 0.5rem;
+}
+
+.form-check-label {
+    font-size: 0.875rem;
+    color: #495057;
+}
+
+.form-check-input:checked {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+/* Company header styling */
+.company-header {
+    font-size: 1.1rem;
+    color: #495057;
+}
+
+.memo-header {
+    font-size: 1rem;
+}
+
+/* Materials table styling */
+.materials-table {
+    border: 2px solid #dee2e6;
+}
+
+.materials-table th {
+    background-color: #f8f9fa !important;
+    color: #495057 !important;
+    font-weight: 600;
+    font-size: 0.75rem;
+    padding: 8px 12px;
+    border: 1px solid #dee2e6;
+}
+
+.materials-table td {
+    padding: 8px 12px;
+    border: 1px solid #dee2e6;
+    font-size: 0.875rem;
+}
+
+.materials-table .table-secondary td {
+    background-color: #e9ecef !important;
+    font-weight: 600;
+    padding: 6px 12px;
+}
+
+/* Entry cell styling */
+.entry-cell {
+    vertical-align: top;
+    padding-top: 12px !important;
+}
+
+/* Borderless form controls for table */
+.form-control.border-0 {
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent;
+    padding: 4px 8px;
+}
+
+.form-control.border-0:focus {
+    border: 1px solid #86b7fe !important;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25) !important;
+    background: white;
+}
+
+/* Label alignment in form rows */
+.col-form-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #495057;
+    text-transform: uppercase;
+}
+
+/* Compact form styling */
+.row.mb-3 .col-form-label {
+    padding-top: 0.375rem;
+    padding-bottom: 0.375rem;
+}
+
+/* Table responsive improvements */
+.table-responsive {
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+}
+
+/* Remove card margins for cleaner look */
+.card.compact-card {
+    margin-bottom: 1.5rem;
+}
+
+.card.compact-card .card-body {
+    padding: 1.5rem;
+}
+
+.form-label {
+    font-weight: 500;
+    color: #495057;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+}
+
+/* Material table styles */
+#materialsTable {
+    font-size: 14px;
+}
+
+#materialsTable th {
+    vertical-align: middle;
+    text-align: center;
+    font-weight: 600;
+}
+
+#materialsTable td {
+    vertical-align: middle;
+}
+
+#materialsTable input,
+#materialsTable select {
+    font-size: 0.85rem;
+    padding: 0.375rem 0.5rem;
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+    height: 34px; /* Consistent height for table inputs */
+    line-height: 1.5;
+}
+
+#materialsTable input:focus,
+#materialsTable select:focus {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.15rem rgba(13, 110, 253, 0.15);
+    outline: 0;
+}
+
+#materialsTable textarea {
+    height: auto;
+    min-height: 60px;
+}
+
+.total-cost {
+    font-weight: 600;
+    color: #198754;
+}
+
+#grandTotal {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #dc3545;
+}
+
+.material-row:hover {
+    background-color: #f8f9fa;
+}
+
+/* Required field asterisk */
+.required-field::after {
+    content: " *";
+    color: #dc3545;
+    font-weight: bold;
+}
+
+/* Responsive table adjustments */
+@media (max-width: 768px) {
+    #materialsTable {
+        font-size: 12px;
+    }
+    
+    #materialsTable input,
+    #materialsTable select {
+        font-size: 11px;
+        padding: 0.125rem 0.25rem;
+    }
+}
+
+.sidebar-header {
+    padding: 20px;
+    border-bottom: 1px solid #e0e0e0;
+    background-color: #f8f9fa;
+}
+
+.sidebar-title {
+    color: #6c757d;
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.sidebar-nav {
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-nav .nav {
+    padding: 0;
+    list-style: none;
+}
+
+.sidebar-nav .nav-item {
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.sidebar-nav .nav-link {
+    display: block;
+    padding: 15px 20px;
+    color: #495057;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.sidebar-nav .nav-link:hover {
+    background-color: #f8f9fa;
+    color: #007bff;
+    text-decoration: none;
+}
+
+.sidebar-nav .nav-link.active {
+    background-color: #e8f2ff;
+    color: #4f46e5;
+    border-right: 3px solid #4f46e5;
+    font-weight: 500;
+}
+
+.sidebar-nav .nav-link i {
+    width: 20px;
+    text-align: center;
+    font-size: 16px;
+}
+
+/* Dropdown navigation styling */
+.dropdown-nav .dropdown-toggle-nav {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.dropdown-nav .dropdown-toggle-nav .fa-chevron-right {
+    transition: transform 0.2s ease;
+    font-size: 12px;
+}
+
+.dropdown-nav .dropdown-toggle-nav[aria-expanded="true"] .fa-chevron-right {
+    transform: rotate(90deg);
+}
+
+/* Parent menu active state */
+.nav-link.parent-active {
+    background-color: #e8f2ff !important;
+    color: #4f46e5 !important;
+    border-right: 3px solid #4f46e5;
+    font-weight: 600;
+}
+
+/* Submenu styling */
+.submenu-item {
+    padding: 8px 12px 8px 16px !important;
+    font-size: 14px;
+    color: #6c757d !important;
+    transition: all 0.2s ease;
+}
+
+.submenu-item:hover {
+    background-color: #f8f9fa !important;
+    color: #495057 !important;
+}
+
+.submenu-item.active {
+    background-color: transparent !important;
+    color: #4f46e5 !important;
+    font-weight: 600;
+    border: none !important;
+    border-right: none !important;
+}
+
+.submenu-item.active .fas.fa-circle {
+    color: #4f46e5 !important;
+}
+
+/* Collapse animation */
+.collapse {
+    transition: all 0.3s ease;
+}
+
+.collapsing {
+    transition: height 0.3s ease;
+}
+
+/* Sidebar overlay for mobile */
+.sidebar-overlay {
+    position: fixed;
+    top: 60px;
+    left: 0;
+    width: 100%;
+    height: calc(100vh - 60px);
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1030; /* Below sidebar but above content */
+    display: none;
+    transition: opacity 0.3s ease;
+}
+
+.sidebar-overlay.show {
+    display: block;
+}
+
+/* Main content with sidebar */
+.main-content {
+    margin-left: 0; /* No margin by default (sidebar hidden) */
+    min-height: calc(100vh - 60px);
+    background-color: #f8f9fa;
+    transition: margin-left 0.3s ease;
+    padding-top: 0;
+}
+
+.main-content.sidebar-open {
+    margin-left: 250px; /* Shift content when sidebar is open */
+}
+
+.content-wrapper {
+    padding: 20px;
+}
+
+/* Responsive adjustments */
+@media (min-width: 992px) {
+    .sidebar-overlay {
+        display: none !important;
+    }
+}
+
+@media (max-width: 991px) {
+    .main-content.sidebar-open {
+        margin-left: 0; /* No shift on mobile/tablet - sidebar overlays */
+    }
+}

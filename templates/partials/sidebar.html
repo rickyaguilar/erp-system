@@ -1,0 +1,117 @@
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <!-- <h5 class="sidebar-title">Interface</h5> -->
+    </div>
+    
+    <nav class="sidebar-nav">
+        <ul class="nav flex-column">
+            <!-- Dashboard -->
+            <li class="nav-item">
+                <a href="{% url 'dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                    <i class="fas fa-home me-2"></i>
+                    Dashboard
+                </a>
+            </li>
+            
+            <!-- Inventory Dropdown -->
+            <li class="nav-item dropdown-nav">
+                {% if request.resolver_match.url_name == 'purchase' or request.resolver_match.url_name == 'delivery' or request.resolver_match.url_name == 'masterlist' or request.resolver_match.url_name == 'request_form' %}
+                <a href="#" class="nav-link dropdown-toggle-nav active parent-active" data-bs-toggle="collapse" data-bs-target="#inventorySubmenu" aria-expanded="true">
+                {% else %}
+                <a href="#" class="nav-link dropdown-toggle-nav" data-bs-toggle="collapse" data-bs-target="#inventorySubmenu" aria-expanded="false">
+                {% endif %}
+                    <i class="fas fa-boxes me-2"></i>
+                    Inventory
+                    <i class="fas fa-chevron-right float-end mt-1"></i>
+                </a>
+                {% if request.resolver_match.url_name == 'purchase' or request.resolver_match.url_name == 'delivery' or request.resolver_match.url_name == 'masterlist' or request.resolver_match.url_name == 'request_form' %}
+                <div class="collapse show" id="inventorySubmenu">
+                {% else %}
+                <div class="collapse" id="inventorySubmenu">
+                {% endif %}
+                    <ul class="nav flex-column ms-3">
+                        <li class="nav-item">
+                            <a href="{% url 'inventory:purchase' %}" class="nav-link submenu-item {% if request.resolver_match.url_name == 'purchase' %}active{% endif %}">
+                                <i class="fas fa-circle me-2" style="font-size: 6px;"></i>
+                                Purchase
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'inventory:delivery' %}" class="nav-link submenu-item {% if request.resolver_match.url_name == 'delivery' %}active{% endif %}">
+                                <i class="fas fa-circle me-2" style="font-size: 6px;"></i>
+                                Delivery
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'inventory:masterlist' %}" class="nav-link submenu-item {% if request.resolver_match.url_name == 'masterlist' %}active{% endif %}">
+                                <i class="fas fa-circle me-2" style="font-size: 6px;"></i>
+                                Masterlist
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'inventory:request_form' %}" class="nav-link submenu-item {% if request.resolver_match.url_name == 'request_form' %}active{% endif %}">
+                                <i class="fas fa-circle me-2" style="font-size: 6px;"></i>
+                                Request Form
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            
+            <!-- Accounting Dropdown -->
+            <li class="nav-item dropdown-nav">
+                {% if request.resolver_match.url_name == 'overview' or request.resolver_match.url_name == 'liquidation_form' or request.resolver_match.url_name == 'debit_memo' or request.resolver_match.url_name == 'check_voucher' or request.resolver_match.url_name == 'disbursement' %}
+                <a href="#" class="nav-link dropdown-toggle-nav active parent-active" data-bs-toggle="collapse" data-bs-target="#accountingSubmenu" aria-expanded="true">
+                {% else %}
+                <a href="#" class="nav-link dropdown-toggle-nav" data-bs-toggle="collapse" data-bs-target="#accountingSubmenu" aria-expanded="false">
+                {% endif %}
+                    <i class="fas fa-calculator me-2"></i>
+                    Accounting
+                    <i class="fas fa-chevron-right float-end mt-1"></i>
+                </a>
+                {% if request.resolver_match.url_name == 'overview' or request.resolver_match.url_name == 'liquidation_form' or request.resolver_match.url_name == 'debit_memo' or request.resolver_match.url_name == 'check_voucher' or request.resolver_match.url_name == 'disbursement' %}
+                <div class="collapse show" id="accountingSubmenu">
+                {% else %}
+                <div class="collapse" id="accountingSubmenu">
+                {% endif %}
+                    <ul class="nav flex-column ms-3">
+                        <li class="nav-item">
+                            <a href="{% url 'accounting:overview' %}" class="nav-link submenu-item {% if request.resolver_match.url_name == 'overview' %}active{% endif %}">
+                                <i class="fas fa-circle me-2" style="font-size: 6px;"></i>
+                                Overview
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'accounting:liquidation_form' %}" class="nav-link submenu-item {% if request.resolver_match.url_name == 'liquidation_form' %}active{% endif %}">
+                                <i class="fas fa-circle me-2" style="font-size: 6px;"></i>
+                                Liquidation Form
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'accounting:debit_memo' %}" class="nav-link submenu-item {% if request.resolver_match.url_name == 'debit_memo' %}active{% endif %}">
+                                <i class="fas fa-circle me-2" style="font-size: 6px;"></i>
+                                Debit Memo
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'accounting:check_voucher' %}" class="nav-link submenu-item {% if request.resolver_match.url_name == 'check_voucher' %}active{% endif %}">
+                                <i class="fas fa-circle me-2" style="font-size: 6px;"></i>
+                                Check Voucher
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'accounting:disbursement' %}" class="nav-link submenu-item {% if request.resolver_match.url_name == 'disbursement' %}active{% endif %}">
+                                <i class="fas fa-circle me-2" style="font-size: 6px;"></i>
+                                Disbursement
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+        </ul>
+    </nav>
+</div>
+
+<!-- Sidebar overlay for mobile -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>

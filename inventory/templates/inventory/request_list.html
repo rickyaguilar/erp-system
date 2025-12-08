@@ -1,0 +1,248 @@
+{% extends "base_module.html" %}
+
+{% block content %}
+<style>
+/* Remove specific hover animations without breaking functionality */
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+}
+
+.card:hover {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+}
+
+.table tbody tr:hover {
+    background-color: #f8f9fa !important;
+}
+
+.clickable-row:hover {
+    background-color: #f8f9fa !important;
+}
+</style>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Page Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="mb-0">Material Requests</h2>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item">
+                            <i class="fas fa-boxes me-1"></i>Inventory
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">Material Requests</li>
+                    </ol>
+                </nav>
+            </div>
+            
+            <!-- Simple Tabs -->
+            <ul class="nav nav-tabs mb-4">
+                <li class="nav-item">
+                    <a class="nav-link active" href="{% url 'inventory:request_list' %}">
+                        <i class="fas fa-list me-2"></i>Request List
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'inventory:request_form' %}">
+                        <i class="fas fa-plus me-2"></i>Request Form
+                    </a>
+                </li>
+            </ul>
+
+            <!-- Requests Table -->
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="card-title mb-0">
+                        All Material Requests ({{ total_requests }})
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table mb-0">
+                            <thead style="background-color: #ffffff !important;">
+                                <tr style="background-color: #ffffff !important;">
+                                    <th style="background-color: #ffffff !important; color: #000000 !important;">Request No.</th>
+                                    <th style="background-color: #ffffff !important; color: #000000 !important;">Project Name</th>
+                                    <th style="background-color: #ffffff !important; color: #000000 !important;">Requested By</th>
+                                    <th style="background-color: #ffffff !important; color: #000000 !important;">Date</th>
+                                    <th style="background-color: #ffffff !important; color: #000000 !important;">Status</th>
+                                    <th style="background-color: #ffffff !important; color: #000000 !important;">Approved By</th>
+                                    <th style="background-color: #ffffff !important; color: #000000 !important;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for request in requests %}
+                                <tr class="clickable-row" data-href="{% url 'inventory:request_form' %}?id={{ request.id }}">
+                                    <td>
+                                        <span class="fw-bold text-primary">{{ request.request_number }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold">{{ request.project_name }}</div>
+                                        <small class="text-muted">{{ request.project_location|truncatechars:40 }}</small>
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold">{{ request.requested_by.get_full_name|default:request.requested_by.username }}</div>
+                                        <small class="text-muted">{{ request.site_supervisor }}</small>
+                                    </td>
+                                    <td>
+                                        <div>{{ request.created_at|date:"M d, Y" }}</div>
+                                    </td>
+                                    <td>
+                                        <span class="fw-semibold 
+                                            {% if request.status == 'pending' %}text-warning
+                                            {% elif request.status == 'approved' %}text-success
+                                            {% elif request.status == 'rejected' %}text-danger
+                                            {% else %}text-info
+                                            {% endif %}">
+                                            {{ request.get_status_display|upper }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if request.approved_by %}
+                                            <div class="fw-semibold">{{ request.approved_by.get_full_name|default:request.approved_by.username }}</div>
+                                            <small class="text-muted">{{ request.approved_date|date:"M d, Y" }}</small>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="d-flex gap-2">
+                                            <a href="{% url 'inventory:request_form' %}?id={{ request.id }}" class="btn btn-primary btn-xs" title="View/Edit">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            {% if request.status == 'pending' %}
+                                            <button type="button" class="btn btn-success btn-xs" title="Approve" onclick="showApproveModal('{{ request.request_number }}', {{ request.id }})">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                            {% endif %}
+                                            <button class="btn btn-secondary btn-xs" title="Print">
+                                                <i class="fas fa-print"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center py-5">
+                                        <div class="text-muted">
+                                            <i class="fas fa-inbox fa-3x mb-3"></i>
+                                            <h5>No requests found</h5>
+                                            <p>No material requests have been created yet.</p>
+                                            <a href="{% url 'inventory:request_form' %}" class="btn btn-primary">
+                                                <i class="fas fa-plus me-2"></i>Create New Request
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    {% if requests.has_other_pages %}
+                    <div class="d-flex justify-content-between align-items-center p-3 border-top">
+                        <div class="text-muted">
+                            Showing {{ requests.start_index }} to {{ requests.end_index }} of {{ requests.paginator.count }} results
+                        </div>
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination mb-0">
+                                {% if requests.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ requests.previous_page_number }}">Previous</a>
+                                </li>
+                                {% endif %}
+                                
+                                {% for num in requests.paginator.page_range %}
+                                {% if requests.number == num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                                {% elif num > requests.number|add:'-3' and num < requests.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                </li>
+                                {% endif %}
+                                {% endfor %}
+                                
+                                {% if requests.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ requests.next_page_number }}">Next</a>
+                                </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Approve Confirmation Modal -->
+<div class="modal fade" id="approveModal" tabindex="-1" aria-labelledby="approveModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="approveModalLabel">
+                    Confirm Approval
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex align-items-center justify-content-center">
+                    <div>
+                        <h6 class="mb-0">Confirm approve of <span id="approveRequestNumber" class="text-primary fw-bold"></span>?</h6>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">
+                    Cancel
+                </button>
+                <button type="button" class="btn btn-success btn-sm" id="confirmApproveBtn">
+                    Confirm
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<form id="approveForm" method="post" style="display: none;">
+    {% csrf_token %}
+</form>
+
+<script>
+let currentRequestId = null;
+
+function showApproveModal(requestNumber, requestId) {
+    currentRequestId = requestId;
+    document.getElementById('approveRequestNumber').textContent = requestNumber;
+    const modal = new bootstrap.Modal(document.getElementById('approveModal'));
+    modal.show();
+}
+
+document.getElementById('confirmApproveBtn').addEventListener('click', function() {
+    if (currentRequestId) {
+        const form = document.getElementById('approveForm');
+        form.action = `/inventory/approve-request/${currentRequestId}/`;
+        form.submit();
+    }
+});
+
+// Make table rows clickable
+document.addEventListener('DOMContentLoaded', function() {
+    const clickableRows = document.querySelectorAll('.clickable-row');
+    clickableRows.forEach(row => {
+        row.style.cursor = 'pointer';
+        row.addEventListener('click', function(e) {
+            // Don't redirect if clicking on buttons
+            if (!e.target.closest('.btn-group') && !e.target.closest('button')) {
+                window.location.href = this.dataset.href;
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
