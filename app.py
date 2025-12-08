@@ -138,17 +138,25 @@ def products():
 def add_product():
     """Add a new product"""
     if request.method == 'POST':
-        name = request.form.get('name')
-        description = request.form.get('description')
-        price = float(request.form.get('price'))
-        quantity = int(request.form.get('quantity'))
-        
-        new_product = Product(name=name, description=description, price=price, quantity=quantity)
-        db.session.add(new_product)
-        db.session.commit()
-        
-        flash('Product added successfully!', 'success')
-        return redirect(url_for('products'))
+        try:
+            name = request.form.get('name')
+            description = request.form.get('description')
+            price = float(request.form.get('price'))
+            quantity = int(request.form.get('quantity'))
+            
+            if price < 0 or quantity < 0:
+                flash('Price and quantity must be positive values!', 'danger')
+                return redirect(url_for('add_product'))
+            
+            new_product = Product(name=name, description=description, price=price, quantity=quantity)
+            db.session.add(new_product)
+            db.session.commit()
+            
+            flash('Product added successfully!', 'success')
+            return redirect(url_for('products'))
+        except (ValueError, TypeError):
+            flash('Invalid input. Please check your values!', 'danger')
+            return redirect(url_for('add_product'))
     
     return render_template('add_product.html')
 
@@ -159,14 +167,25 @@ def edit_product(id):
     product = Product.query.get_or_404(id)
     
     if request.method == 'POST':
-        product.name = request.form.get('name')
-        product.description = request.form.get('description')
-        product.price = float(request.form.get('price'))
-        product.quantity = int(request.form.get('quantity'))
-        
-        db.session.commit()
-        flash('Product updated successfully!', 'success')
-        return redirect(url_for('products'))
+        try:
+            product.name = request.form.get('name')
+            product.description = request.form.get('description')
+            price = float(request.form.get('price'))
+            quantity = int(request.form.get('quantity'))
+            
+            if price < 0 or quantity < 0:
+                flash('Price and quantity must be positive values!', 'danger')
+                return redirect(url_for('edit_product', id=id))
+            
+            product.price = price
+            product.quantity = quantity
+            
+            db.session.commit()
+            flash('Product updated successfully!', 'success')
+            return redirect(url_for('products'))
+        except (ValueError, TypeError):
+            flash('Invalid input. Please check your values!', 'danger')
+            return redirect(url_for('edit_product', id=id))
     
     return render_template('edit_product.html', product=product)
 
@@ -194,23 +213,40 @@ def orders():
 def add_order():
     """Add a new order"""
     if request.method == 'POST':
-        customer_id = int(request.form.get('customer_id'))
-        product_id = int(request.form.get('product_id'))
-        quantity = int(request.form.get('quantity'))
-        
-        product = Product.query.get(product_id)
-        total_price = product.price * quantity
-        
-        new_order = Order(customer_id=customer_id, product_id=product_id, 
-                         quantity=quantity, total_price=total_price)
-        db.session.add(new_order)
-        
-        # Update product quantity
-        product.quantity -= quantity
-        
-        db.session.commit()
-        flash('Order created successfully!', 'success')
-        return redirect(url_for('orders'))
+        try:
+            customer_id = int(request.form.get('customer_id'))
+            product_id = int(request.form.get('product_id'))
+            quantity = int(request.form.get('quantity'))
+            
+            if quantity <= 0:
+                flash('Quantity must be a positive number!', 'danger')
+                return redirect(url_for('add_order'))
+            
+            product = Product.query.get(product_id)
+            if not product:
+                flash('Product not found!', 'danger')
+                return redirect(url_for('add_order'))
+            
+            # Validate stock availability
+            if product.quantity < quantity:
+                flash(f'Insufficient stock! Only {product.quantity} units available.', 'danger')
+                return redirect(url_for('add_order'))
+            
+            total_price = product.price * quantity
+            
+            new_order = Order(customer_id=customer_id, product_id=product_id, 
+                             quantity=quantity, total_price=total_price)
+            db.session.add(new_order)
+            
+            # Update product quantity
+            product.quantity -= quantity
+            
+            db.session.commit()
+            flash('Order created successfully!', 'success')
+            return redirect(url_for('orders'))
+        except (ValueError, TypeError):
+            flash('Invalid input. Please check your values!', 'danger')
+            return redirect(url_for('add_order'))
     
     customers = Customer.query.all()
     products = Product.query.filter(Product.quantity > 0).all()
