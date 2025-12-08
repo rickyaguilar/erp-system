@@ -1,70 +1,44 @@
 from django.core.management.base import BaseCommand
-from inventory.models import Category, Warehouse, Material
+from inventory.models import InventoryItem
 
 class Command(BaseCommand):
     help = 'Populates sample inventory data'
 
     def handle(self, *args, **options):
-        # Create categories
-        categories_data = [
-            'Construction Materials',
-            'Tools',
-            'Safety Equipment',
-            'Electrical',
-            'Plumbing',
+        # Create sample inventory items
+        items_data = [
+            {'item_code': 'MAT-001', 'material_name': 'Cement 50kg', 'category': 'Construction Materials', 'unit': 'bags', 'quantity_on_hand': 500, 'unit_price': 250.00},
+            {'item_code': 'MAT-002', 'material_name': 'Steel Rebar 10mm', 'category': 'Construction Materials', 'unit': 'pcs', 'quantity_on_hand': 1000, 'unit_price': 150.00},
+            {'item_code': 'MAT-003', 'material_name': 'Hollow Blocks', 'category': 'Construction Materials', 'unit': 'pcs', 'quantity_on_hand': 5000, 'unit_price': 12.50},
+            {'item_code': 'MAT-004', 'material_name': 'Sand', 'category': 'Construction Materials', 'unit': 'cubic_meters', 'quantity_on_hand': 50, 'unit_price': 800.00},
+            {'item_code': 'MAT-005', 'material_name': 'Gravel', 'category': 'Construction Materials', 'unit': 'cubic_meters', 'quantity_on_hand': 50, 'unit_price': 900.00},
+            {'item_code': 'TOOL-001', 'material_name': 'Power Drill', 'category': 'Tools', 'unit': 'pcs', 'quantity_on_hand': 10, 'unit_price': 3500.00},
+            {'item_code': 'TOOL-002', 'material_name': 'Hammer', 'category': 'Tools', 'unit': 'pcs', 'quantity_on_hand': 25, 'unit_price': 450.00},
+            {'item_code': 'SAFE-001', 'material_name': 'Safety Helmet', 'category': 'Safety Equipment', 'unit': 'pcs', 'quantity_on_hand': 100, 'unit_price': 350.00},
+            {'item_code': 'SAFE-002', 'material_name': 'Safety Vest', 'category': 'Safety Equipment', 'unit': 'pcs', 'quantity_on_hand': 100, 'unit_price': 200.00},
+            {'item_code': 'ELEC-001', 'material_name': 'Electrical Wire 2.0mm', 'category': 'Electrical', 'unit': 'linear_meters', 'quantity_on_hand': 1000, 'unit_price': 25.00},
+            {'item_code': 'PLUMB-001', 'material_name': 'PVC Pipe 1/2"', 'category': 'Plumbing', 'unit': 'linear_meters', 'quantity_on_hand': 500, 'unit_price': 45.00},
+            {'item_code': 'MAT-006', 'material_name': 'Paint White 4L', 'category': 'Construction Materials', 'unit': 'liters', 'quantity_on_hand': 50, 'unit_price': 850.00},
+            {'item_code': 'MAT-007', 'material_name': 'Plywood 1/2" x 4x8', 'category': 'Construction Materials', 'unit': 'pcs', 'quantity_on_hand': 75, 'unit_price': 620.00},
+            {'item_code': 'TOOL-003', 'material_name': 'Circular Saw', 'category': 'Tools', 'unit': 'pcs', 'quantity_on_hand': 5, 'unit_price': 5500.00},
+            {'item_code': 'SAFE-003', 'material_name': 'Safety Gloves', 'category': 'Safety Equipment', 'unit': 'pcs', 'quantity_on_hand': 150, 'unit_price': 120.00},
         ]
         
-        categories = {}
-        for cat_name in categories_data:
-            cat, created = Category.objects.get_or_create(name=cat_name)
-            categories[cat_name] = cat
-            if created:
-                self.stdout.write(self.style.SUCCESS(f'Created category: {cat_name}'))
-
-        # Create warehouses
-        warehouses_data = [
-            {'name': 'Main Warehouse', 'location': 'Central District'},
-            {'name': 'Site Warehouse A', 'location': 'Project Site A'},
-            {'name': 'Site Warehouse B', 'location': 'Project Site B'},
-        ]
-        
-        warehouses = {}
-        for wh_data in warehouses_data:
-            wh, created = Warehouse.objects.get_or_create(
-                name=wh_data['name'],
-                defaults={'location': wh_data['location']}
-            )
-            warehouses[wh_data['name']] = wh
-            if created:
-                self.stdout.write(self.style.SUCCESS(f'Created warehouse: {wh_data["name"]}'))
-
-        # Create materials
-        materials_data = [
-            {'name': 'Cement 50kg', 'category': 'Construction Materials', 'unit': 'bags', 'quantity': 500, 'unit_price': 250.00},
-            {'name': 'Steel Rebar 10mm', 'category': 'Construction Materials', 'unit': 'pcs', 'quantity': 1000, 'unit_price': 150.00},
-            {'name': 'Hollow Blocks', 'category': 'Construction Materials', 'unit': 'pcs', 'quantity': 5000, 'unit_price': 12.50},
-            {'name': 'Sand', 'category': 'Construction Materials', 'unit': 'cu.m', 'quantity': 50, 'unit_price': 800.00},
-            {'name': 'Gravel', 'category': 'Construction Materials', 'unit': 'cu.m', 'quantity': 50, 'unit_price': 900.00},
-            {'name': 'Power Drill', 'category': 'Tools', 'unit': 'pcs', 'quantity': 10, 'unit_price': 3500.00},
-            {'name': 'Hammer', 'category': 'Tools', 'unit': 'pcs', 'quantity': 25, 'unit_price': 450.00},
-            {'name': 'Safety Helmet', 'category': 'Safety Equipment', 'unit': 'pcs', 'quantity': 100, 'unit_price': 350.00},
-            {'name': 'Safety Vest', 'category': 'Safety Equipment', 'unit': 'pcs', 'quantity': 100, 'unit_price': 200.00},
-            {'name': 'Electrical Wire 2.0mm', 'category': 'Electrical', 'unit': 'meters', 'quantity': 1000, 'unit_price': 25.00},
-            {'name': 'PVC Pipe 1/2"', 'category': 'Plumbing', 'unit': 'meters', 'quantity': 500, 'unit_price': 45.00},
-        ]
-        
-        for mat_data in materials_data:
-            cat = categories[mat_data['category']]
-            mat, created = Material.objects.get_or_create(
-                name=mat_data['name'],
+        for item_data in items_data:
+            item, created = InventoryItem.objects.get_or_create(
+                item_code=item_data['item_code'],
                 defaults={
-                    'category': cat,
-                    'unit': mat_data['unit'],
-                    'quantity': mat_data['quantity'],
-                    'unit_price': mat_data['unit_price']
+                    'material_name': item_data['material_name'],
+                    'category': item_data['category'],
+                    'unit': item_data['unit'],
+                    'quantity_on_hand': item_data['quantity_on_hand'],
+                    'unit_price': item_data['unit_price']
                 }
             )
             if created:
-                self.stdout.write(self.style.SUCCESS(f'Created material: {mat_data["name"]}'))
+                self.stdout.write(self.style.SUCCESS(f'Created: {item_data["item_code"]} - {item_data["material_name"]}'))
+            else:
+                self.stdout.write(self.style.WARNING(f'Already exists: {item_data["item_code"]}'))
 
-        self.stdout.write(self.style.SUCCESS('Sample data population complete!'))
+        self.stdout.write(self.style.SUCCESS('\nSample inventory data population complete!'))
+
