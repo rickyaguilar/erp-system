@@ -1,1 +1,113 @@
 {% extends "base_module.html" %}
+
+{% block content %}
+<style>
+/* Remove card hover animations */
+.card {
+    transition: none !important;
+    transform: none !important;
+}
+
+.card:hover {
+    transition: none !important;
+    transform: none !important;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+}
+</style>
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>Cash Disbursement</h2>
+        </div>
+    </div>
+
+    <form method="POST">
+        {% csrf_token %}
+        
+        <div class="card mb-4">
+            <div class="card-header" style="background-color: white;">
+                <h5 class="mb-0" style="color: black;">Recipient Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="recipient_name" class="form-label">Recipient Name *</label>
+                        <input type="text" class="form-control" id="recipient_name" name="recipient_name" required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="recipient_type" class="form-label">Recipient Type *</label>
+                        <select class="form-control" id="recipient_type" name="recipient_type" required>
+                            <option value="">Select Type</option>
+                            <option value="Supplier">Supplier</option>
+                            <option value="Contractor">Contractor</option>
+                            <option value="Employee">Employee</option>
+                            <option value="Vendor">Vendor</option>
+                            <option value="Others">Others</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="disbursement_date" class="form-label">Disbursement Date *</label>
+                        <input type="date" class="form-control" id="disbursement_date" name="disbursement_date" value="{{ today }}" required>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header" style="background-color: white;">
+                <h5 class="mb-0" style="color: black;">Payment Details</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="amount" class="form-label">Amount *</label>
+                        <input type="number" step="0.01" class="form-control" id="amount" name="amount" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="payment_method" class="form-label">Payment Method *</label>
+                        <select class="form-control" id="payment_method" name="payment_method" required>
+                            <option value="">Select Method</option>
+                            <option value="cash">Cash</option>
+                            <option value="check">Check</option>
+                            <option value="bank_transfer">Bank Transfer</option>
+                            <option value="online">Online Payment</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="reference_number" class="form-label">Reference Number</label>
+                        <input type="text" class="form-control" id="reference_number" name="reference_number" placeholder="Check number, transaction ID, etc.">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="category" class="form-label">Category *</label>
+                        <select class="form-control" id="category" name="category" required>
+                            <option value="">Select Category</option>
+                            <option value="Operating Expense">Operating Expense</option>
+                            <option value="Project Cost">Project Cost</option>
+                            <option value="Payroll">Payroll</option>
+                            <option value="Equipment Purchase">Equipment Purchase</option>
+                            <option value="Material Purchase">Material Purchase</option>
+                            <option value="Professional Fees">Professional Fees</option>
+                            <option value="Others">Others</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="project_name" class="form-label">Project Name</label>
+                        <input type="text" class="form-control" id="project_name" name="project_name">
+                    </div>
+                    <div class="col-12 mb-3">
+                        <label for="purpose" class="form-label">Purpose *</label>
+                        <textarea class="form-control" id="purpose" name="purpose" rows="4" required placeholder="Describe the purpose of this disbursement..."></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="text-end mb-4">
+                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="window.location.href='{% url 'accounting:overview' %}'">Clear</button>
+                <button type="submit" class="btn btn-success btn-sm">Submit</button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

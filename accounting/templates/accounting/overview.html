@@ -1,1 +1,156 @@
 {% extends "base_module.html" %}
+{% load humanize %}
+
+{% block content %}
+<style>
+/* Remove card hover animations */
+.card {
+    transition: none !important;
+    transform: none !important;
+}
+
+.card:hover {
+    transition: none !important;
+    transform: none !important;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+}
+</style>
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>Accounting Overview</h2>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">Pending Liquidations</h6>
+                    <h2 class="mb-0">{{ pending_liquidations }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">Pending Check Vouchers</h6>
+                    <h2 class="mb-0">{{ pending_check_vouchers }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">Total Disbursements</h6>
+                    <h2 class="mb-0">{{ total_disbursements }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">Total Debit Memos</h6>
+                    <h2 class="mb-0">{{ total_debit_memos }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Financial Summary -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header" style="background-color: white;">
+                    <h5 class="mb-0" style="color: black;">Monthly Disbursements</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <p class="text-muted mb-1">This Month</p>
+                            <h4>₱{{ total_disbursed_this_month|floatformat:2|intcomma }}</h4>
+                        </div>
+                        <div class="col-6">
+                            <p class="text-muted mb-1">Last Month</p>
+                            <h4>₱{{ total_disbursed_last_month|floatformat:2|intcomma }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header" style="background-color: white;">
+                    <h5 class="mb-0" style="color: black;">Pending Approvals</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <p class="text-muted mb-1">Liquidations</p>
+                            <h4 style="color: orange;">{{ pending_liquidations }}</h4>
+                        </div>
+                        <div class="col-6">
+                            <p class="text-muted mb-1">Check Vouchers</p>
+                            <h4 style="color: orange;">{{ pending_check_vouchers }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Disbursements -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header" style="background-color: white;">
+                    <h5 class="mb-0" style="color: black;">Recent Disbursements</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Disbursement No.</th>
+                                    <th>Date</th>
+                                    <th>Recipient</th>
+                                    <th>Category</th>
+                                    <th>Payment Method</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for disbursement in recent_disbursements %}
+                                <tr>
+                                    <td>{{ disbursement.disbursement_number }}</td>
+                                    <td>{{ disbursement.disbursement_date|date:"M d, Y" }}</td>
+                                    <td>{{ disbursement.recipient_name }}</td>
+                                    <td>{{ disbursement.category }}</td>
+                                    <td>{{ disbursement.get_payment_method_display }}</td>
+                                    <td>₱{{ disbursement.amount|floatformat:2|intcomma }}</td>
+                                    <td>
+                                        {% if disbursement.status == 'completed' %}
+                                            <span style="color: green;">Completed</span>
+                                        {% elif disbursement.status == 'pending' %}
+                                            <span style="color: orange;">Pending</span>
+                                        {% else %}
+                                            <span style="color: red;">Cancelled</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center">No disbursements recorded yet</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

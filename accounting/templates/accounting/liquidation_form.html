@@ -1,1 +1,179 @@
 {% extends "base_module.html" %}
+
+{% block content %}
+<style>
+/* Remove card hover animations */
+.card {
+    transition: none !important;
+    transform: none !important;
+}
+
+.card:hover {
+    transition: none !important;
+    transform: none !important;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+}
+</style>
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>Liquidation Form</h2>
+        </div>
+    </div>
+
+    <form method="POST" id="liquidation-form">
+        {% csrf_token %}
+        
+        <div class="card mb-4">
+            <div class="card-header" style="background-color: white;">
+                <h5 class="mb-0" style="color: black;">Liquidation Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="project_name" class="form-label">Project Name *</label>
+                        <input type="text" class="form-control" id="project_name" name="project_name" required>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="cash_advance_amount" class="form-label">Cash Advance Amount *</label>
+                        <input type="number" step="0.01" class="form-control" id="cash_advance_amount" name="cash_advance_amount" required>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="cash_advance_date" class="form-label">Cash Advance Date *</label>
+                        <input type="date" class="form-control" id="cash_advance_date" name="cash_advance_date" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="liquidation_date" class="form-label">Liquidation Date *</label>
+                        <input type="date" class="form-control" id="liquidation_date" name="liquidation_date" value="{{ today }}" required>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header" style="background-color: white;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0" style="color: black;">Expense Details</h5>
+                    <button type="button" class="btn btn-primary btn-xs" id="add-expense">Add Expense</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+                    <table class="table table-bordered" id="expense-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 10%;">Date</th>
+                                <th style="width: 30%;">Description</th>
+                                <th style="width: 15%;">Category</th>
+                                <th style="width: 15%;">Amount</th>
+                                <th style="width: 15%;">Receipt No.</th>
+                                <th style="width: 10%;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="expense-items">
+                            <tr class="expense-row">
+                                <td><input type="date" class="form-control" name="item_date[]" required></td>
+                                <td><input type="text" class="form-control" name="item_description[]" required></td>
+                                <td>
+                                    <select class="form-control" name="item_category[]" required>
+                                        <option value="">Select Category</option>
+                                        <option value="Transportation">Transportation</option>
+                                        <option value="Materials">Materials</option>
+                                        <option value="Labor">Labor</option>
+                                        <option value="Meals">Meals</option>
+                                        <option value="Utilities">Utilities</option>
+                                        <option value="Others">Others</option>
+                                    </select>
+                                </td>
+                                <td><input type="number" step="0.01" class="form-control expense-amount" name="item_amount[]" required></td>
+                                <td><input type="text" class="form-control" name="item_receipt[]"></td>
+                                <td class="text-center"><button type="button" class="btn btn-outline-danger btn-xs remove-row"><i class="fas fa-trash"></i></button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="row mt-4">
+                    <div class="col-md-6 offset-md-6">
+                        <table class="table">
+                            <tr>
+                                <th>Total Expenses:</th>
+                                <td class="text-end"><strong id="total-expenses">₱0.00</strong></td>
+                            </tr>
+                            <tr>
+                                <th>Cash Advance:</th>
+                                <td class="text-end"><strong id="cash-advance-display">₱0.00</strong></td>
+                            </tr>
+                            <tr class="table-active">
+                                <th>Balance:</th>
+                                <td class="text-end"><strong id="balance-display">₱0.00</strong></td>
+                            </tr>
+                        </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="text-end mb-4">
+                <button type="button" class="btn btn-outline-secondary btn-sm me-2" onclick="window.location.href='{% url 'accounting:overview' %}'">Clear</button>
+                <button type="submit" class="btn btn-success btn-sm">Submit</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const expenseTable = document.getElementById('expense-items');
+    const addExpenseBtn = document.getElementById('add-expense');
+    const cashAdvanceInput = document.getElementById('cash_advance_amount');
+    
+    // Add new expense row
+    addExpenseBtn.addEventListener('click', function() {
+        const newRow = expenseTable.querySelector('.expense-row').cloneNode(true);
+        newRow.querySelectorAll('input').forEach(input => input.value = '');
+        newRow.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
+        expenseTable.appendChild(newRow);
+        attachRemoveHandler();
+    });
+    
+    // Remove row handler
+    function attachRemoveHandler() {
+        document.querySelectorAll('.remove-row').forEach(btn => {
+            btn.onclick = function() {
+                if (document.querySelectorAll('.expense-row').length > 1) {
+                    this.closest('.expense-row').remove();
+                    calculateTotals();
+                }
+            };
+        });
+    }
+    
+    // Calculate totals
+    function calculateTotals() {
+        let total = 0;
+        document.querySelectorAll('.expense-amount').forEach(input => {
+            total += parseFloat(input.value) || 0;
+        });
+        
+        const cashAdvance = parseFloat(cashAdvanceInput.value) || 0;
+        const balance = cashAdvance - total;
+        
+        document.getElementById('total-expenses').textContent = '₱' + total.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+        document.getElementById('cash-advance-display').textContent = '₱' + cashAdvance.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+        document.getElementById('balance-display').textContent = '₱' + balance.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+    }
+    
+    // Update calculations on input
+    document.addEventListener('input', function(e) {
+        if (e.target.classList.contains('expense-amount') || e.target.id === 'cash_advance_amount') {
+            calculateTotals();
+        }
+    });
+    
+    attachRemoveHandler();
+});
+</script>
+{% endblock %}
