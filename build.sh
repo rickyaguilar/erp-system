@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
-set -e
+# exit on error
+set -o errexit
 
 pip install -r requirements.txt
 
-echo "RUNNING MIGRATIONS..."
-python manage.py migrate --verbosity 3
+python manage.py collectstatic --no-input
+python manage.py migrate
+python manage.py createadmin
